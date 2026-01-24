@@ -109,9 +109,11 @@ export default function Home() {
                   Start Exploring <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                For Business Owners
-              </Button>
+              <Link href="/business" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full">
+                  For Business Owners
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </div>

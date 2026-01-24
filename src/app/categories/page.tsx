@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { Star, MapPin } from "lucide-react";
 
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+
 export default function CategoriesPage() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
@@ -68,6 +70,13 @@ export default function CategoriesPage() {
             <Navbar />
 
             <div className="container mx-auto px-6 pt-32 pb-20">
+                <Breadcrumbs
+                    items={[
+                        { label: "Categories", href: "/categories" },
+                        ...(selectedCategory ? [{ label: selectedCategory }] : [])
+                    ]}
+                    className="mb-8"
+                />
                 {!selectedCategory ? (
                     <>
                         {/* Hero Section */}
@@ -255,8 +264,8 @@ export default function CategoriesPage() {
                                         <button
                                             onClick={() => setSelectedSubcategory(null)}
                                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${!selectedSubcategory
-                                                    ? 'bg-primary text-white'
-                                                    : 'bg-muted hover:bg-muted/80'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-muted hover:bg-muted/80'
                                                 }`}
                                         >
                                             All
@@ -266,8 +275,8 @@ export default function CategoriesPage() {
                                                 key={sub}
                                                 onClick={() => setSelectedSubcategory(sub)}
                                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedSubcategory === sub
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-muted hover:bg-muted/80'
+                                                    ? 'bg-primary text-white'
+                                                    : 'bg-muted hover:bg-muted/80'
                                                     }`}
                                             >
                                                 {sub}

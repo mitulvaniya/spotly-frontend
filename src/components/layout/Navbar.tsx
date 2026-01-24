@@ -17,6 +17,7 @@ export function Navbar() {
         { name: "Discover", href: "/discover" },
         { name: "Trending", href: "/trending" },
         { name: "Categories", href: "/categories" },
+        { name: "For Business", href: "/business" },
         { name: "AI Concierge", href: "/ai" },
     ];
 
@@ -35,7 +36,7 @@ export function Navbar() {
 
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-8">
-                    {navItems.map((item) => (
+                    {[{ name: "Discover", href: "/discover" }, { name: "Trending", href: "/trending" }, { name: "Categories", href: "/categories" }, { name: "For Business", href: "/business" }].map((item) => (
                         <Link
                             key={item.name}
                             href={item.href}

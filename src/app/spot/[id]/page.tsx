@@ -12,6 +12,9 @@ import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { SPOTS } from "@/lib/data";
+import { useWishlist } from "@/context/WishlistContext";
+import { toast } from "sonner";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 
 // Mock reviews data
 const MOCK_REVIEWS = [
@@ -54,7 +57,17 @@ export default function SpotDetailPage() {
         return SPOTS.filter(s => s.category === spot.category && s.id !== spot.id).slice(0, 3);
     }, [spot]);
 
-    const [isLiked, setIsLiked] = useState(false);
+    const { savedIds, toggleSave } = useWishlist();
+    const isLiked = spot ? savedIds.includes(spot.id.toString()) : false;
+
+    const handleSave = () => {
+        if (spot) {
+            toggleSave(spot.id.toString());
+            toast.success(isLiked ? "Removed from Saved" : "Added to Saved", {
+                description: spot.name
+            });
+        }
+    };
 
     if (!spot) {
         return (
@@ -85,77 +98,57 @@ export default function SpotDetailPage() {
     };
 
     const handleShare = () => {
-        if (navigator.share) {
-            navigator.share({
-                title: spot.name,
-                text: spotData.tagline,
-                url: window.location.href,
-            });
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert("Link copied to clipboard!");
-        }
+        navigator.clipboard.writeText(window.location.href);
+        toast.info("Link copied to clipboard!");
     };
 
     return (
         <div className="min-h-screen bg-background">
             <Navbar />
 
-            {/* Hero Header */}
-            <div className="relative h-[60vh] w-full overflow-hidden">
+            {/* Hero Section */}
+            <div className="relative h-[60vh] w-full">
+                <div className="absolute inset-0 bg-black/40 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-20" />
                 <Image
-                    src={spotData.images[0]}
+                    src={spot.image}
                     alt={spot.name}
                     fill
                     className="object-cover"
                     priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
 
-                <div className="absolute bottom-0 left-0 right-0 container mx-auto px-6 pb-12 pt-32">
+                <div className="absolute bottom-0 left-0 right-0 z-30 container mx-auto px-6 pb-12">
+                    <Breadcrumbs
+                        items={[
+                            { label: "Discover", href: "/discover" },
+                            { label: spot.category, href: `/discover?category=${spot.category}` },
+                            { label: spot.name }
+                        ]}
+                        className="mb-6 text-white/70"
+                    />
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col md:flex-row items-end justify-between gap-6"
                     >
-                        <div>
-                            <div className="flex items-center gap-3 mb-4 flex-wrap">
-                                <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">{spot.category}</span>
-                                <span className="flex items-center gap-1 text-yellow-500 font-medium text-sm">
-                                    <Star className="w-4 h-4 fill-yellow-500" /> {spot.rating}
-                                </span>
-                                <span className="text-white/60 text-sm">• {spot.price}</span>
-                                <span className="text-white/60 text-sm">• {spot.distance}km away</span>
+                        <div className="flex items-center gap-4 mb-4">
+                            <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-bold">
+                                {spot.category}
+                            </span>
+                            <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white text-sm font-bold border border-white/10">
+                                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                {spot.rating}
                             </div>
-                            <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 mb-2">
-                                {spot.name}
-                            </h1>
-                            <p className="text-lg md:text-xl text-white/80 max-w-2xl flex items-center gap-2">
-                                <MapPin className="w-5 h-5" />
-                                {spot.location}
-                            </p>
+                            <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white text-sm font-bold border border-white/10">
+                                {spot.price}
+                            </div>
                         </div>
-
-                        <div className="flex gap-3">
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="rounded-full h-12 px-6 gap-2 bg-white/5 border-white/10 backdrop-blur-md hover:bg-white/10"
-                                onClick={() => setIsLiked(!isLiked)}
-                            >
-                                <Heart className={cn("w-5 h-5", isLiked && "fill-red-500 text-red-500")} />
-                                <span>Save</span>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="rounded-full h-12 px-6 gap-2 bg-white/5 border-white/10 backdrop-blur-md hover:bg-white/10"
-                                onClick={handleShare}
-                            >
-                                <Share2 className="w-5 h-5" />
-                                <span>Share</span>
-                            </Button>
-                        </div>
+                        <h1 className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tight">
+                            {spot.name}
+                        </h1>
+                        <p className="text-xl text-white/80 max-w-2xl flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-primary" /> {spot.location} • {spot.distance}km away
+                        </p>
                     </motion.div>
                 </div>
             </div>
@@ -165,26 +158,72 @@ export default function SpotDetailPage() {
 
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-12">
-                        {/* About Section */}
-                        <motion.div
+                        {/* Actions Mobile Only */}
+                        <div className="flex lg:hidden gap-4 overflow-x-auto pb-4">
+                            <Button onClick={handleSave} variant={isLiked ? "primary" : "outline"} className="w-full gap-2 text-lg h-12">
+                                <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} /> {isLiked ? "Saved to Collection" : "Save to Collection"}
+                            </Button>
+                            <Button onClick={handleShare} variant="outline" className="w-full gap-2 text-lg h-12">
+                                <Share2 className="w-5 h-5" /> Share with Friends
+                            </Button>
+                            <Button className="flex-1 gap-2">
+                                <Navigation className="w-4 h-4" /> Directions
+                            </Button>
+                        </div>
+
+                        {/* Description */}
+                        <motion.section
                             initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="space-y-6"
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
                         >
-                            <h2 className="text-3xl font-bold">About</h2>
+                            <h2 className="text-2xl font-bold mb-4">About</h2>
                             <p className="text-muted-foreground leading-relaxed text-lg">
                                 {spotData.description}
                             </p>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                {spotData.features.map(feature => (
-                                    <div key={feature} className="flex items-center gap-2 text-sm text-white/80 bg-white/5 p-3 rounded-xl border border-white/5">
-                                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                        <span className="truncate">{feature}</span>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                                {spotData.features.map((feature, i) => (
+                                    <div key={i} className="flex items-center gap-2 text-sm font-medium border border-border rounded-lg p-3">
+                                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                                        {feature}
                                     </div>
                                 ))}
                             </div>
-                        </motion.div>
+                        </motion.section>
+
+                        {/* Location Map Visual */}
+                        <motion.section
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                        >
+                            <h2 className="text-2xl font-bold mb-4">Location</h2>
+                            <div className="relative h-64 w-full rounded-3xl overflow-hidden border border-border group cursor-pointer">
+                                {/* Mock Map Background - Using a generic map style image */}
+                                <Image
+                                    src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2074&auto=format&fit=crop"
+                                    alt="Map Location"
+                                    fill
+                                    className="object-cover opacity-60 group-hover:opacity-40 transition-opacity grayscale group-hover:grayscale-0"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
+
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="bg-primary text-white p-3 rounded-full shadow-lg shadow-primary/30 animate-bounce">
+                                        <MapPin className="w-6 h-6 fill-current" />
+                                    </div>
+                                </div>
+
+                                <div className="absolute bottom-4 left-4 right-4 bg-card/80 backdrop-blur-md p-4 rounded-xl border border-white/10 flex items-center justify-between">
+                                    <div>
+                                        <p className="font-bold">{spot.location}</p>
+                                        <p className="text-xs text-muted-foreground">{spot.distance}km from center</p>
+                                    </div>
+                                    <Button size="sm">Get Directions</Button>
+                                </div>
+                            </div>
+                        </motion.section>
 
                         {/* Reviews Section */}
                         <motion.div

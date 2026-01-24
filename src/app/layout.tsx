@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { Toaster } from "sonner";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -60,6 +61,7 @@ export default function RootLayout({
         >
           <WishlistProvider>
             {children}
+            <Toaster position="top-center" richColors />
           </WishlistProvider>
         </ThemeProvider>
       </body>
