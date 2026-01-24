@@ -75,9 +75,11 @@ export function Navbar() {
                         </Tooltip>
                     </Link>
 
-                    <Button variant="primary" size="sm">
-                        Sign In
-                    </Button>
+                    <Link href="/signin">
+                        <Button variant="primary" size="sm">
+                            Sign In
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Mobile Actions */}
@@ -132,9 +134,11 @@ export function Navbar() {
                                     </Link>
                                 ))}
                                 <div className="pt-4 border-t border-border">
-                                    <Button variant="primary" className="w-full">
-                                        Sign In
-                                    </Button>
+                                    <Link href="/signin" onClick={() => setMobileMenuOpen(false)}>
+                                        <Button variant="primary" className="w-full">
+                                            Sign In
+                                        </Button>
+                                    </Link>
                                 </div>
                             </nav>
                         </motion.div>
