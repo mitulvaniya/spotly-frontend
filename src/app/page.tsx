@@ -72,10 +72,32 @@ export default function Home() {
               Curated guides to the city's best kept secrets. From hidden speakeasies to panoramic rooftops, find your next vibe with SPOTLY.
             </p>
 
+            {/* Quick Search */}
+            <div className="max-w-2xl mx-auto mb-8">
+              <Link href="/discover">
+                <div className="relative group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+                  <div className="relative bg-card border border-border rounded-full p-2 flex items-center gap-3 hover:border-primary transition-all">
+                    <div className="pl-4 flex items-center gap-2 text-muted-foreground">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <span className="text-base">Search spots, categories, vibes...</span>
+                    </div>
+                    <Button size="lg" className="rounded-full shrink-0">
+                      Explore
+                    </Button>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="w-full sm:w-auto gap-2">
-                Start Exploring <ArrowRight className="w-5 h-5" />
-              </Button>
+              <Link href="/discover" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full gap-2">
+                  Start Exploring <ArrowRight className="w-5 h-5" />
+                </Button>
+              </Link>
               <Button variant="outline" size="lg" className="w-full sm:w-auto">
                 For Business Owners
               </Button>
