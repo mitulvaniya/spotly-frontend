@@ -179,20 +179,45 @@ export default function Home() {
           <h2 className="text-4xl font-bold mb-16 text-center">Find Your Vibe</h2>
 
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {CATEGORIES.map((cat, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              { name: "Dining", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop", color: "from-orange-500/80 to-red-500/80" },
+              { name: "Nightlife", image: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=1740&auto=format&fit=crop", color: "from-purple-500/80 to-indigo-500/80" },
+              { name: "Cafes", image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1678&auto=format&fit=crop", color: "from-yellow-500/80 to-amber-500/80" },
+              { name: "Hotels", image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1740&auto=format&fit=crop", color: "from-blue-500/80 to-cyan-500/80" },
+            ].map((cat, i) => (
               <Link key={cat.name} href={`/discover?category=${encodeURIComponent(cat.name)}`}>
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  whileHover={{ y: -5 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 aspect-square cursor-pointer hover:bg-accent/50 transition-colors"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -10 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="group relative h-96 rounded-3xl overflow-hidden cursor-pointer"
                 >
-                  <div className={cn("w-16 h-16 rounded-full flex items-center justify-center", cat.color)}>
-                    <cat.icon className="w-8 h-8" />
+                  {/* Background Image */}
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+
+                  {/* Color Glow on Hover */}
+                  <div className={`absolute inset-0 bg-gradient-to-t ${cat.color} opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+
+                  {/* Content */}
+                  <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-center text-center">
+                    <div className="w-12 h-1 bg-white/30 rounded-full mb-4 group-hover:w-20 group-hover:bg-white transition-all duration-300" />
+                    <h3 className="text-3xl font-black text-white tracking-tight mb-2 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      {cat.name}
+                    </h3>
+                    <p className="text-white/70 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75">
+                      Explore Collection <ArrowRight className="inline w-3 h-3 ml-1" />
+                    </p>
                   </div>
-                  <h3 className="text-lg font-semibold">{cat.name}</h3>
                 </motion.div>
               </Link>
             ))}
