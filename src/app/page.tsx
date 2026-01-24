@@ -178,21 +178,23 @@ export default function Home() {
         <div className="container mx-auto max-w-5xl">
           <h2 className="text-4xl font-bold mb-16 text-center">Find Your Vibe</h2>
 
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {CATEGORIES.map((cat, i) => (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                whileHover={{ y: -5 }}
-                transition={{ delay: i * 0.05 }}
-                className="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 aspect-square cursor-pointer hover:bg-accent/50 transition-colors"
-              >
-                <div className={cn("w-16 h-16 rounded-full flex items-center justify-center", cat.color)}>
-                  <cat.icon className="w-8 h-8" />
-                </div>
-                <h3 className="text-lg font-semibold">{cat.name}</h3>
-              </motion.div>
+              <Link key={cat.name} href={`/discover?category=${encodeURIComponent(cat.name)}`}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  whileHover={{ y: -5 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="glass-card p-6 rounded-2xl flex flex-col items-center justify-center gap-4 aspect-square cursor-pointer hover:bg-accent/50 transition-colors"
+                >
+                  <div className={cn("w-16 h-16 rounded-full flex items-center justify-center", cat.color)}>
+                    <cat.icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-semibold">{cat.name}</h3>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>
