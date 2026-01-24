@@ -77,14 +77,14 @@ export default function Home() {
               <Link href="/discover">
                 <div className="relative group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />
-                  <div className="relative bg-card border border-border rounded-full p-2 flex items-center gap-3 hover:border-primary transition-all">
-                    <div className="pl-4 flex items-center gap-2 text-muted-foreground">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="relative bg-card border border-border rounded-full p-2 flex items-center justify-between gap-3 hover:border-primary transition-all">
+                    <div className="pl-4 flex items-center gap-2 text-muted-foreground flex-1">
+                      <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                       <span className="text-base">Search spots, categories, vibes...</span>
                     </div>
-                    <Button size="lg" className="rounded-full shrink-0">
+                    <Button as="div" size="lg" className="rounded-full shrink-0">
                       Explore
                     </Button>
                   </div>
@@ -94,7 +94,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/discover" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full gap-2">
+                <Button as="div" size="lg" className="w-full gap-2">
                   Start Exploring <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
