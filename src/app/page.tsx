@@ -96,8 +96,9 @@ export default function Home() {
                       className="flex-1 bg-transparent border-none outline-none text-base text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
-                  <Button type="submit" as="button" size="lg" className="rounded-full shrink-0">
-                    Explore
+                  <Button type="submit" as="button" size="lg" className="rounded-full shrink-0 px-4 sm:px-8">
+                    <span className="hidden sm:inline">Explore</span>
+                    <ArrowRight className="w-5 h-5 sm:hidden" />
                   </Button>
                 </div>
               </form>

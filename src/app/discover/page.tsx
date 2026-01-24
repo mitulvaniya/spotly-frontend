@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Star, Filter, X, ArrowUpDown } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { SPOTS } from "@/lib/data";
 import { FilterSidebar } from "@/components/discover/FilterSidebar";
 
@@ -19,7 +20,8 @@ const SORT_OPTIONS = [
     { label: "Budget: Low to High", value: "price" },
 ];
 
-export default function DiscoverPage() {
+function DiscoverContent() {
+    const searchParams = useSearchParams();
     const [filters, setFilters] = useState({
         budget: [] as string[],
         minRating: 0,
@@ -29,6 +31,14 @@ export default function DiscoverPage() {
     const [sortBy, setSortBy] = useState("recommended");
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Initialize search from URL
+    useEffect(() => {
+        const query = searchParams.get("q");
+        if (query) {
+            setSearchQuery(query);
+        }
+    }, [searchParams]);
 
     // Apply filters
     let filteredSpots = SPOTS.filter(spot => {
@@ -46,7 +56,9 @@ export default function DiscoverPage() {
 
         // Search query
         if (searchQuery && !spot.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            !spot.location.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+            !spot.location.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            !spot.category.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            !spot.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))) return false;
 
         return true;
     });
@@ -79,6 +91,7 @@ export default function DiscoverPage() {
                         <h1 className="text-4xl md:text-5xl font-bold mb-4">Explore the City</h1>
                         <p className="text-muted-foreground text-lg">
                             {filteredSpots.length} {filteredSpots.length === 1 ? 'spot' : 'spots'} found
+                            {searchQuery && <span className="text-foreground"> for "{searchQuery}"</span>}
                         </p>
                     </div>
 
@@ -216,9 +229,15 @@ export default function DiscoverPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-20">
-                                <p className="text-2xl font-bold mb-2">No spots found</p>
-                                <p className="text-muted-foreground mb-6">Try adjusting your filters or search query</p>
+                            <div className="glass-card p-12 text-center rounded-3xl border border-white/10">
+                                <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Search className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-2">No spots found</h3>
+                                <p className="text-muted-foreground mb-6">
+                                    We couldn't find anything matching "{searchQuery}".<br />
+                                    Try adjusting your search or filters.
+                                </p>
                                 <Button onClick={() => {
                                     setFilters({ budget: [], minRating: 0, maxDistance: 50, categories: [] });
                                     setSearchQuery("");
@@ -256,5 +275,13 @@ export default function DiscoverPage() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function DiscoverPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <DiscoverContent />
+        </Suspense>
     );
 }

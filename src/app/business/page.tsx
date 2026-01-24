@@ -8,6 +8,8 @@ import { motion } from "framer-motion";
 import { BarChart3, Users, Store, Plus, TrendingUp, DollarSign } from "lucide-react";
 import Image from "next/image";
 
+import { toast } from "sonner";
+
 export default function BusinessDashboardPage() {
     const stats = [
         { label: "Total Views", value: "12.5k", icon: Users, change: "+12%", color: "text-blue-500" },
@@ -15,6 +17,12 @@ export default function BusinessDashboardPage() {
         { label: "Reservations", value: "128", icon: Store, change: "+18%", color: "text-green-500" },
         { label: "Revenue Est.", value: "$12.4k", icon: DollarSign, change: "+8%", color: "text-orange-500" },
     ];
+
+    const handleAddSpot = () => {
+        toast.info("Coming Soon", {
+            description: "Backend integration required to add new spots."
+        });
+    };
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
@@ -25,7 +33,7 @@ export default function BusinessDashboardPage() {
                     <Breadcrumbs
                         items={[{ label: "Business Dashboard" }]}
                     />
-                    <Button className="gap-2">
+                    <Button className="gap-2" onClick={handleAddSpot}>
                         <Plus className="w-4 h-4" /> Add New Spot
                     </Button>
                 </div>
