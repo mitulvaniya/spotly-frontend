@@ -109,6 +109,33 @@ export const authApi = {
     }
 };
 
+export const userApi = {
+    getProfile: async () => {
+        return await fetchAPI<any>("/users/profile");
+    },
+
+    updateProfile: async (data: { name?: string; phone?: string; bio?: string }) => {
+        const result = await fetchAPI<any>("/users/profile", {
+            method: "PUT",
+            body: JSON.stringify(data),
+        });
+
+        if (result.success && result.data?.user) {
+            if (typeof window !== "undefined") {
+                // Update stored user data
+                const currentUser = authApi.getCurrentUser();
+                localStorage.setItem("user", JSON.stringify({ ...currentUser, ...result.data.user }));
+            }
+        }
+
+        return result;
+    },
+
+    getSavedSpots: async () => {
+        return await fetchAPI<any>("/users/saved");
+    }
+};
+
 export const api = {
     get: <T>(endpoint: string) => fetchAPI<T>(endpoint, { method: "GET" }),
     post: <T>(endpoint: string, body: any) => fetchAPI<T>(endpoint, { method: "POST", body: JSON.stringify(body) }),
