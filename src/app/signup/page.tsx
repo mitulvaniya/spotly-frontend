@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
-import { ArrowLeft, Mail, Lock, Github } from "lucide-react";
+import { User, Mail, Lock, ArrowLeft, Github } from "lucide-react";
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -11,16 +11,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api";
 
-export default function SignInPage() {
+export default function SignUpPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
+        name: "",
         email: "",
         password: ""
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.type]: e.target.value });
+        setFormData({ ...formData, [e.target.type === 'text' ? 'name' : e.target.type]: e.target.value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -28,21 +29,21 @@ export default function SignInPage() {
         setIsLoading(true);
 
         try {
-            const response = await authApi.login(formData.email, formData.password);
+            const response = await authApi.register(formData.name, formData.email, formData.password);
 
             if (response.success) {
-                toast.success("Welcome back!", {
-                    description: "You have successfully signed in.",
+                toast.success("Account created!", {
+                    description: "You have successfully signed up. Welcome to SPOTLY!",
                 });
-                // Force a hard refresh to update UI state
+                // Force a hard refresh/redirect to home
                 window.location.href = '/';
             } else {
-                toast.error("Sign in failed", {
-                    description: response.message || "Please check your credentials.",
+                toast.error("Sign up failed", {
+                    description: response.message || "Please check your details.",
                 });
             }
         } catch (error: any) {
-            console.error("Login error:", error);
+            console.error("Registration error:", error);
             toast.error("An error occurred", {
                 description: error.message || "Please try again later.",
             });
@@ -73,11 +74,25 @@ export default function SignInPage() {
                                         SPOTLY<span className="text-primary">.</span>
                                     </span>
                                 </Link>
-                                <h1 className="text-2xl font-bold mb-2">Welcome back</h1>
-                                <p className="text-muted-foreground">Sign in to access your saved spots</p>
+                                <h1 className="text-2xl font-bold mb-2">Create an account</h1>
+                                <p className="text-muted-foreground">Join SPOTLY to discover and save amazing places</p>
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium ml-1">Full Name</label>
+                                    <div className="relative">
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            placeholder="John Doe"
+                                            className="w-full bg-muted/50 border border-border rounded-xl px-12 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            required
+                                        />
+                                    </div>
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium ml-1">Email</label>
                                     <div className="relative">
@@ -85,7 +100,7 @@ export default function SignInPage() {
                                         <input
                                             type="email"
                                             value={formData.email}
-                                            onChange={handleChange}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             placeholder="hello@example.com"
                                             className="w-full bg-muted/50 border border-border rounded-xl px-12 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                             required
@@ -99,18 +114,12 @@ export default function SignInPage() {
                                         <input
                                             type="password"
                                             value={formData.password}
-                                            onChange={handleChange}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                             placeholder="••••••••"
                                             className="w-full bg-muted/50 border border-border rounded-xl px-12 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                             required
                                         />
                                     </div>
-                                </div>
-
-                                <div className="flex justify-end">
-                                    <Link href="#" className="text-sm text-primary hover:underline">
-                                        Forgot password?
-                                    </Link>
                                 </div>
 
                                 <Button
@@ -119,7 +128,7 @@ export default function SignInPage() {
                                     size="lg"
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? "Signing in..." : "Sign In"}
+                                    {isLoading ? "Creating account..." : "Sign Up"}
                                 </Button>
                             </form>
 
@@ -149,9 +158,9 @@ export default function SignInPage() {
                             </div>
 
                             <p className="text-center text-sm text-muted-foreground mt-8">
-                                Don't have an account?{" "}
-                                <Link href="/signup" className="text-primary hover:underline font-medium">
-                                    Sign up
+                                Already have an account?{" "}
+                                <Link href="/signin" className="text-primary hover:underline font-medium">
+                                    Sign in
                                 </Link>
                             </p>
                         </div>
