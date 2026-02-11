@@ -114,7 +114,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/discover" className="w-full sm:w-auto">
+              <Link href="/categories" className="w-full sm:w-auto">
                 <Button as="div" size="lg" className="w-full gap-2">
                   Start Exploring <ArrowRight className="w-5 h-5" />
                 </Button>
