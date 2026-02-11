@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import User from '../models/User';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { asyncHandler, AppError } from '../middleware/errorHandler';
+import { OAuth2Client } from 'google-auth-library';
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -156,5 +157,95 @@ export const logout = asyncHandler(async (_req: Request, res: Response): Promise
     res.status(200).json({
         success: true,
         message: 'Logout successful',
+    });
+});
+
+// @desc    Google OAuth login/register
+// @route   POST /api/auth/google
+// @access  Public
+export const googleLogin = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+        throw new AppError('Google ID token is required', 400);
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+        throw new AppError('Google OAuth is not configured on this server', 500);
+    }
+
+    const client = new OAuth2Client(clientId);
+
+    // Verify the ID token with Google
+    let payload;
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: clientId,
+        });
+        payload = ticket.getPayload();
+    } catch (error) {
+        throw new AppError('Invalid Google ID token', 401);
+    }
+
+    if (!payload || !payload.email) {
+        throw new AppError('Failed to get user info from Google', 401);
+    }
+
+    const { email, name, sub: googleId, picture } = payload;
+
+    // Find existing user by email or googleId
+    let user = await User.findOne({
+        $or: [{ email }, { googleId }]
+    });
+
+    if (user) {
+        // Update Google info if not already set
+        if (!user.googleId) {
+            user.googleId = googleId;
+            user.provider = 'google';
+        }
+        if (picture && !user.avatar) {
+            user.avatar = picture;
+        }
+        await user.save();
+    } else {
+        // Create new user from Google profile
+        user = await User.create({
+            name: name || email!.split('@')[0],
+            email,
+            googleId,
+            provider: 'google',
+            avatar: picture || '',
+            isVerified: true, // Google emails are already verified
+        });
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken({
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+    });
+
+    const refreshToken = generateRefreshToken({
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+    });
+
+    // Remove password from response
+    const userResponse: any = user.toObject();
+    delete userResponse.password;
+
+    res.status(200).json({
+        success: true,
+        message: 'Google login successful',
+        data: {
+            user: userResponse,
+            accessToken,
+            refreshToken,
+        },
     });
 });

@@ -106,6 +106,24 @@ export const authApi = {
             return userStr ? JSON.parse(userStr) : null;
         }
         return null;
+    },
+
+    googleLogin: async (idToken: string) => {
+        const result = await fetchAPI<any>("/auth/google", {
+            method: "POST",
+            body: JSON.stringify({ idToken }),
+        });
+
+        if (result.success && result.data?.accessToken) {
+            if (typeof window !== "undefined") {
+                localStorage.setItem("token", result.data.accessToken);
+                if (result.data.user) {
+                    localStorage.setItem("user", JSON.stringify(result.data.user));
+                }
+            }
+        }
+
+        return result;
     }
 };
 

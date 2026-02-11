@@ -4,9 +4,11 @@ import bcrypt from 'bcryptjs';
 export interface IUser extends Document {
     name: string;
     email: string;
-    password: string;
+    password?: string;
     avatar?: string;
     role: 'user' | 'business_owner' | 'admin' | 'moderator';
+    provider: 'local' | 'google';
+    googleId?: string;
     savedSpots: mongoose.Types.ObjectId[];
     phone?: string;
     bio?: string;
@@ -36,9 +38,18 @@ const UserSchema = new Schema<IUser>(
         },
         password: {
             type: String,
-            required: [true, 'Password is required'],
+            required: false,
             minlength: [6, 'Password must be at least 6 characters'],
             select: false, // Don't return password by default
+        },
+        provider: {
+            type: String,
+            enum: ['local', 'google'],
+            default: 'local',
+        },
+        googleId: {
+            type: String,
+            sparse: true,
         },
         avatar: {
             type: String,
@@ -79,7 +90,7 @@ const UserSchema = new Schema<IUser>(
 
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) {
+    if (!this.isModified('password') || !this.password) {
         return next();
     }
 
