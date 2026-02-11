@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import React from "react";
 import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
