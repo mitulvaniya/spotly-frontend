@@ -42,10 +42,14 @@ export function Navbar() {
             transition={{ duration: 0.5 }}
             className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
         >
+            import {Logo} from "@/components/ui/Logo";
+
+            // ... existing imports ...
+
+            // In snippet context
             <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-                <Link href="/" className="group flex items-center gap-1 text-2xl font-bold tracking-tight text-foreground">
-                    SPOTLY
-                    <span className="text-primary animate-pulse">.</span>
+                <Link href="/" className="group flex items-center gap-1 text-foreground">
+                    <Logo />
                 </Link>
 
                 {/* Desktop Navigation */}

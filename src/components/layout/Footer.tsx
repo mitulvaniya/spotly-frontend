@@ -11,9 +11,14 @@ export function Footer() {
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                     {/* Brand Column */}
+                    import {Logo} from "@/components/ui/Logo";
+
+                    // ... existing imports ...
+
+                    // In snippet context
                     <div className="space-y-4">
-                        <Link href="/" className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-1">
-                            SPOTLY<span className="text-primary animate-pulse">.</span>
+                        <Link href="/" className="text-foreground flex items-center gap-1 w-fit">
+                            <Logo />
                         </Link>
                         <p className="text-sm leading-relaxed max-w-xs">
                             The premium city discovery platform. Uncovering the best dining, nightlife, and hidden gems in your city.
