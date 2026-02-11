@@ -17,7 +17,7 @@ export default function SavedPage() {
     const savedSpots = SPOTS.filter(spot => savedIds.includes(spot.id.toString()));
 
     return (
-        <div className="min-h-screen bg-slate-950 flex flex-col">
+        <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
 
             <main className="flex-1 container mx-auto px-6 pt-24 pb-12">
@@ -26,17 +26,17 @@ export default function SavedPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-8"
                 >
-                    <h1 className="text-4xl font-bold font-outfit text-white mb-2">Your Collection 💖</h1>
-                    <p className="text-slate-400">Manage your favorite spots for future reference.</p>
+                    <h1 className="text-4xl font-bold font-outfit text-foreground mb-2">Your Collection 💖</h1>
+                    <p className="text-muted-foreground">Manage your favorite spots for future reference.</p>
                 </motion.div>
 
                 {savedSpots.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
-                        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                            <HeartOff className="w-10 h-10 text-slate-500" />
+                        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+                            <HeartOff className="w-10 h-10 text-muted-foreground" />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">No Saved Spots Yet</h2>
-                        <p className="text-slate-400 max-w-md mx-auto mb-6">Start exploring to find the hidden gems of Surat and add them to your collection.</p>
+                        <h2 className="text-2xl font-bold text-foreground mb-2">No Saved Spots Yet</h2>
+                        <p className="text-muted-foreground max-w-md mx-auto mb-6">Start exploring to find the hidden gems of Surat and add them to your collection.</p>
                         <Link href="/discover">
                             <Button variant="primary" size="md">Start Exploring</Button>
                         </Link>
@@ -47,7 +47,7 @@ export default function SavedPage() {
                             <Link href={`/spot/${spot.id}`} key={spot.id}>
                                 <Card
                                     spotId={spot.id.toString()}
-                                    className="h-full hover:border-pink-500/30 transition-colors"
+                                    className="h-full hover:border-primary/50 transition-colors"
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: index * 0.05 }}
@@ -65,15 +65,15 @@ export default function SavedPage() {
                                     </div>
                                     <div className="p-5">
                                         <div className="flex justify-between items-start mb-2">
-                                            <h3 className="text-xl font-bold font-outfit text-white">{spot.name}</h3>
+                                            <h3 className="text-xl font-bold font-outfit text-foreground">{spot.name}</h3>
                                             {/* Fallback for price since it's missing in basic Type */}
-                                            <span className="text-sm font-medium text-pink-400">₹₹₹</span>
+                                            <span className="text-sm font-medium text-primary">₹₹₹</span>
                                         </div>
                                         {/* Fallback for description */}
-                                        <p className="text-slate-400 text-sm mb-4 line-clamp-2">
+                                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
                                             Experience the best vibes in Surat. A top-rated destination for {spot.category} lovers.
                                         </p>
-                                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                             <span>⭐ {spot.rating}</span>
                                             <span>•</span>
                                             <span>{spot.location}</span>

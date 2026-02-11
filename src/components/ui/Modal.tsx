@@ -44,9 +44,9 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="w-full max-w-lg bg-background/90 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl overflow-hidden pointer-events-auto"
+                            className="w-full max-w-lg bg-background/90 backdrop-blur-xl border border-border/50 shadow-2xl rounded-3xl overflow-hidden pointer-events-auto"
                         >
-                            <div className="flex items-center justify-between p-6 border-b border-white/10">
+                            <div className="flex items-center justify-between p-6 border-b border-border/50">
                                 <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
                                     {title || "Modal"}
                                 </h3>

@@ -22,7 +22,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
                 initial={hoverEffect ? { y: 0 } : undefined}
                 whileHover={hoverEffect ? { y: -5 } : undefined}
                 className={cn(
-                    "glass-card rounded-3xl bg-black/40 border border-white/10 relative group hover:z-20 transition-all",
+                    "glass-card rounded-3xl relative group hover:z-20 transition-all",
                     className
                 )}
                 {...(props as any)}
@@ -53,9 +53,9 @@ function HeartButton({ id }: { id: string }) {
                 e.stopPropagation();
                 toggleSave(id);
             }}
-            className="p-2 rounded-full bg-black/40 backdrop-blur-md hover:bg-black/60 transition-colors"
+            className="p-2 rounded-full bg-white/70 dark:bg-black/40 backdrop-blur-md hover:bg-white/90 dark:hover:bg-black/60 transition-colors border border-black/5 dark:border-white/10 shadow-sm"
         >
-            <Heart className={cn("w-5 h-5 transition-colors", saved ? "fill-pink-500 text-pink-500" : "text-white")} />
+            <Heart className={cn("w-5 h-5 transition-colors", saved ? "fill-pink-500 text-pink-500" : "text-slate-700 dark:text-white")} />
         </button>
     );
 }
