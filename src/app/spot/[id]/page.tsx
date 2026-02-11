@@ -457,7 +457,7 @@ export default function SpotDetailPage() {
                                 </div>
 
                                 <div className="pt-4 space-y-3">
-                                    <Button onClick={handleSave} variant={isLiked ? "secondary" : "default"} className="w-full h-12 text-base font-semibold shadow-xl shadow-primary/20 gap-2">
+                                    <Button onClick={handleSave} variant={isLiked ? "secondary" : "outline"} className="w-full h-12 text-base font-semibold shadow-xl shadow-primary/20 gap-2">
                                         <Heart className={`w-5 h-5 ${isLiked ? "fill-current text-red-500" : ""}`} />
                                         {isLiked ? "Saved to Collection" : "Save Spot"}
                                     </Button>
