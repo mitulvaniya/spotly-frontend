@@ -6,12 +6,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Tooltip } from "@/components/ui/Tooltip";
 
-import { useState } from "react";
-import { Sparkles, Heart, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Sparkles, Heart, Menu, X, User, LogOut } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
+import { authApi } from "@/lib/api";
 
 export function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+
+    useEffect(() => {
+        // Check if user is logged in
+        const currentUser = authApi.getCurrentUser();
+        setUser(currentUser);
+    }, []);
+
+    const handleLogout = () => {
+        authApi.logout();
+        setUser(null);
+    };
 
     const navItems = [
         { name: "Discover", href: "/discover" },
@@ -76,11 +90,44 @@ export function Navbar() {
                         </Tooltip>
                     </Link>
 
-                    <Link href="/signin">
-                        <Button variant="primary" size="sm">
-                            Sign In
-                        </Button>
-                    </Link>
+                    {user ? (
+                        <div className="relative">
+                            <Tooltip text={user.name || user.email}>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowUserMenu(!showUserMenu)}
+                                    className="gap-2"
+                                >
+                                    <User className="w-4 h-4" />
+                                    <span className="hidden lg:inline">{user.name || 'Profile'}</span>
+                                </Button>
+                            </Tooltip>
+                            {showUserMenu && (
+                                <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-1 z-50">
+                                    <Link href="/profile" onClick={() => setShowUserMenu(false)}>
+                                        <button className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2">
+                                            <User className="w-4 h-4" />
+                                            Profile
+                                        </button>
+                                    </Link>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2 text-red-500"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        Logout
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <Link href="/signin">
+                            <Button variant="primary" size="sm">
+                                Sign In
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 {/* Mobile Actions */}
@@ -146,7 +193,7 @@ export function Navbar() {
                     </>
                 )}
             </AnimatePresence>
-        </motion.header>
+        </motion.header >
     );
 }
 
