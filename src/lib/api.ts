@@ -62,9 +62,9 @@ export const authApi = {
             body: JSON.stringify({ email, password }),
         });
 
-        if (result.success && result.data?.token) {
+        if (result.success && result.data?.accessToken) {
             if (typeof window !== "undefined") {
-                localStorage.setItem("token", result.data.token);
+                localStorage.setItem("token", result.data.accessToken);
                 if (result.data.user) {
                     localStorage.setItem("user", JSON.stringify(result.data.user));
                 }
@@ -80,9 +80,9 @@ export const authApi = {
             body: JSON.stringify({ name, email, password }),
         });
 
-        if (result.success && result.data?.token) {
+        if (result.success && result.data?.accessToken) {
             if (typeof window !== "undefined") {
-                localStorage.setItem("token", result.data.token);
+                localStorage.setItem("token", result.data.accessToken);
                 if (result.data.user) {
                     localStorage.setItem("user", JSON.stringify(result.data.user));
                 }
