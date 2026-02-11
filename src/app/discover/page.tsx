@@ -43,6 +43,7 @@ function DiscoverContent() {
         budget: [] as string[],
         minRating: 0,
         categories: [] as string[],
+        maxDistance: 50,
     });
     const [sortBy, setSortBy] = useState("recommended");
     const [showMobileFilters, setShowMobileFilters] = useState(false);
