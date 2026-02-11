@@ -165,11 +165,10 @@ export default function SignUpPage() {
                             </Link>
                         </p>
                     </div>
+                </motion.div>
             </div>
-        </motion.div>
-            </div >
 
-        <Footer />
+            <Footer />
         </div >
     );
 }
