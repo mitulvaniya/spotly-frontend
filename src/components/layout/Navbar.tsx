@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { Logo } from "@/components/ui/Logo";
 
 import { useState, useEffect } from "react";
 import { Sparkles, Heart, Menu, X, User, LogOut } from "lucide-react";
@@ -42,11 +43,6 @@ export function Navbar() {
             transition={{ duration: 0.5 }}
             className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
         >
-            import {Logo} from "@/components/ui/Logo";
-
-            // ... existing imports ...
-
-            // In snippet context
             <div className="container mx-auto px-6 h-20 flex items-center justify-between">
                 <Link href="/" className="group flex items-center gap-1 text-foreground">
                     <Logo />

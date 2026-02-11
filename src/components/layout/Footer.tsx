@@ -11,6 +11,7 @@ export function Footer() {
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                     {/* Brand Column */}
+// ... existing imports ...
                     import {Logo} from "@/components/ui/Logo";
 
                     // ... existing imports ...
