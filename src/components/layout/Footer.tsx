@@ -4,6 +4,7 @@ import React from "react";
 
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin, MapPin, Mail, Phone } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export function Footer() {
     return (
@@ -11,12 +12,6 @@ export function Footer() {
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                     {/* Brand Column */}
-// ... existing imports ...
-                    import {Logo} from "@/components/ui/Logo";
-
-                    // ... existing imports ...
-
-                    // In snippet context
                     <div className="space-y-4">
                         <Link href="/" className="text-foreground flex items-center gap-1 w-fit">
                             <Logo />
