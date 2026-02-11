@@ -6,26 +6,42 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, MapPin, Star, Filter, X, ArrowUpDown } from "lucide-react";
+import { Search, MapPin, Star, Filter, X, ArrowUpDown, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
-import { SPOTS } from "@/lib/data";
 import { FilterSidebar } from "@/components/discover/FilterSidebar";
+import { api } from "@/lib/api";
 
 const SORT_OPTIONS = [
     { label: "Recommended", value: "recommended" },
     { label: "Highest Rated", value: "rating" },
-    { label: "Nearest First", value: "distance" },
+    { label: "Latest", value: "latest" },
     { label: "Budget: Low to High", value: "price" },
 ];
 
+interface Spot {
+    _id: string;
+    name: string;
+    category: string;
+    featuredImage: string;
+    priceRange: string;
+    rating: number;
+    location: {
+        city: string;
+        address: string;
+    };
+    tags: string[];
+    distance?: number; // Optional, calculated if location available
+}
+
 function DiscoverContent() {
     const searchParams = useSearchParams();
+    const [spots, setSpots] = useState<Spot[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [filters, setFilters] = useState({
         budget: [] as string[],
         minRating: 0,
-        maxDistance: 50,
         categories: [] as string[],
     });
     const [sortBy, setSortBy] = useState("recommended");
@@ -35,30 +51,56 @@ function DiscoverContent() {
     // Initialize search from URL
     useEffect(() => {
         const query = searchParams.get("q");
+        const category = searchParams.get("category");
         if (query) {
             setSearchQuery(query);
         }
+        if (category) {
+            setFilters(prev => ({ ...prev, categories: [category] }));
+        }
     }, [searchParams]);
 
+    // Fetch spots on mount
+    useEffect(() => {
+        const fetchSpots = async () => {
+            setIsLoading(true);
+            try {
+                // Fetch all spots for client-side filtering (simpler for now)
+                // In a real large-scale app, we would move filtering to backend.
+                const response = await api.get<{ spots: Spot[] }>('/spots?limit=100');
+                if (response.success && response.data?.spots) {
+                    setSpots(response.data.spots);
+                }
+            } catch (error) {
+                console.error("Failed to fetch spots:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSpots();
+    }, []);
+
     // Apply filters
-    let filteredSpots = SPOTS.filter(spot => {
+    let filteredSpots = spots.filter(spot => {
         // Budget filter
-        if (filters.budget.length > 0 && !filters.budget.includes(spot.price)) return false;
+        if (filters.budget.length > 0 && !filters.budget.includes(spot.priceRange)) return false;
 
         // Rating filter
-        if (spot.rating < filters.minRating) return false;
-
-        // Distance filter
-        if (spot.distance > filters.maxDistance) return false;
+        if ((spot.rating || 0) < filters.minRating) return false;
 
         // Category filter
         if (filters.categories.length > 0 && !filters.categories.includes(spot.category)) return false;
 
         // Search query
-        if (searchQuery && !spot.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            !spot.location.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            !spot.category.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            !spot.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))) return false;
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            const matchesName = spot.name.toLowerCase().includes(query);
+            const matchesCity = spot.location?.city?.toLowerCase().includes(query);
+            const matchesCategory = spot.category.toLowerCase().includes(query);
+            const matchesTags = spot.tags?.some(tag => tag.toLowerCase().includes(query));
+
+            if (!matchesName && !matchesCity && !matchesCategory && !matchesTags) return false;
+        }
 
         return true;
     });
@@ -67,18 +109,19 @@ function DiscoverContent() {
     filteredSpots = [...filteredSpots].sort((a, b) => {
         switch (sortBy) {
             case "rating":
-                return b.rating - a.rating;
-            case "distance":
-                return a.distance - b.distance;
+                return (b.rating || 0) - (a.rating || 0);
             case "price":
-                return a.price.length - b.price.length;
+                return (a.priceRange?.length || 0) - (b.priceRange?.length || 0);
+            case "latest":
+                // Assuming _id is somewhat time-ordered or we had createdAt
+                return b._id.localeCompare(a._id);
             default:
                 return 0; // Recommended (default order)
         }
     });
 
     const activeFilterCount = filters.budget.length + filters.categories.length +
-        (filters.minRating > 0 ? 1 : 0) + (filters.maxDistance < 50 ? 1 : 0);
+        (filters.minRating > 0 ? 1 : 0);
 
     return (
         <div className="min-h-screen bg-background">
@@ -158,13 +201,27 @@ function DiscoverContent() {
                                     </button>
                                 </span>
                             )}
-                            {filters.maxDistance < 50 && (
-                                <span className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
-                                    Within {filters.maxDistance}km
-                                    <button onClick={() => setFilters({ ...filters, maxDistance: 50 })}>
+                            {filters.categories.map(cat => (
+                                <span key={cat} className="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
+                                    {cat}
+                                    <button onClick={() => setFilters({
+                                        ...filters,
+                                        categories: filters.categories.filter(c => c !== cat)
+                                    })}>
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
+                            ))}
+                            {(activeFilterCount > 0) && (
+                                <button
+                                    onClick={() => {
+                                        setFilters({ budget: [], minRating: 0, categories: [] });
+                                        setSearchQuery("");
+                                    }}
+                                    className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                                >
+                                    Clear all
+                                </button>
                             )}
                         </div>
                     )}
@@ -179,28 +236,32 @@ function DiscoverContent() {
 
                     {/* Results Grid */}
                     <div className="flex-1">
-                        {filteredSpots.length > 0 ? (
+                        {isLoading ? (
+                            <div className="flex justify-center py-20">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            </div>
+                        ) : filteredSpots.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {filteredSpots.map((spot, i) => (
-                                    <Link key={spot.id} href={`/spot/${spot.id}`}>
+                                    <Link key={spot._id} href={`/spot/${spot._id}`}>
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ delay: i * 0.05 }}
                                         >
-                                            <Card spotId={spot.id.toString()} className="group cursor-pointer">
+                                            <Card spotId={spot._id} className="group cursor-pointer">
                                                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
                                                     <Image
-                                                        src={spot.image}
+                                                        src={spot.featuredImage || '/placeholder-spot.jpg'}
                                                         alt={spot.name}
                                                         fill
                                                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                                                     />
                                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold border border-white/10">
-                                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating}
+                                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating || "New"}
                                                     </div>
                                                     <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-xs font-bold border border-white/10">
-                                                        {spot.price}
+                                                        {spot.priceRange || "$$"}
                                                     </div>
                                                 </div>
                                                 <CardContent>
@@ -208,15 +269,15 @@ function DiscoverContent() {
                                                         <div>
                                                             <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{spot.name}</h3>
                                                             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                                                                <MapPin className="w-3 h-3" /> {spot.location} • {spot.distance}km
+                                                                <MapPin className="w-3 h-3" /> {spot.location?.city}
                                                             </p>
                                                         </div>
                                                         <span className="text-xs font-medium bg-white/5 border border-white/10 px-2 py-1 rounded">
                                                             {spot.category}
                                                         </span>
                                                     </div>
-                                                    <div className="flex gap-2 mt-4">
-                                                        {spot.tags.map(tag => (
+                                                    <div className="flex gap-2 mt-4 flex-wrap">
+                                                        {spot.tags?.slice(0, 3).map(tag => (
                                                             <span key={tag} className="text-[10px] uppercase tracking-wider text-white/50 bg-white/5 px-2 py-1 rounded-sm">
                                                                 {tag}
                                                             </span>
@@ -239,7 +300,7 @@ function DiscoverContent() {
                                     Try adjusting your search or filters.
                                 </p>
                                 <Button onClick={() => {
-                                    setFilters({ budget: [], minRating: 0, maxDistance: 50, categories: [] });
+                                    setFilters({ budget: [], minRating: 0, categories: [] });
                                     setSearchQuery("");
                                 }}>
                                     Clear All Filters

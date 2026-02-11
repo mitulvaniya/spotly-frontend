@@ -133,6 +133,25 @@ export const userApi = {
 
     getSavedSpots: async () => {
         return await fetchAPI<any>("/users/saved");
+    },
+
+    toggleSaveSpot: async (spotId: string) => {
+        return await fetchAPI<any>(`/users/saved/${spotId}`, {
+            method: "POST"
+        });
+    }
+};
+
+export const reviewApi = {
+    getSpotReviews: async (spotId: string) => {
+        return await fetchAPI<any>(`/reviews/spot/${spotId}`);
+    },
+
+    createReview: async (data: { spot: string; rating: number; text: string; images?: string[] }) => {
+        return await fetchAPI<any>("/reviews", {
+            method: "POST",
+            body: JSON.stringify(data),
+        });
     }
 };
 

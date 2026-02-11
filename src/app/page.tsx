@@ -4,46 +4,58 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, Star, Utensils, Music, Coffee, Hotel } from "lucide-react";
+import { ArrowRight, MapPin, Star, Utensils, Music, Coffee, Hotel, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 
-// Mock Data for "Wow" Factor
-const FEATURED_SPOTS = [
-  {
-    id: 1,
-    name: "The Cloud Lounge",
-    category: "Nightlife",
-    rating: 4.9,
-    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop",
-    location: "Downtown Skyline",
-  },
-  {
-    id: 2,
-    name: "Sakura Fusion",
-    category: "Dining",
-    rating: 4.8,
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop",
-    location: "Arts District",
-  },
-  {
-    id: 3,
-    name: "Neon Arcade",
-    category: "Entertainment",
-    rating: 4.7,
-    image: "https://images.unsplash.com/photo-1534270804882-6b5048b1c1fc?q=80&w=2012&auto=format&fit=crop",
-    location: "Retro Row",
-  },
-];
-
-const CATEGORIES = [
-  { name: "Dining", icon: Utensils, color: "bg-orange-500/20 text-orange-400" },
-  { name: "Nightlife", icon: Music, color: "bg-purple-500/20 text-purple-400" },
-  { name: "Cafes", icon: Coffee, color: "bg-yellow-500/20 text-yellow-400" },
-  { name: "Hotels", icon: Hotel, color: "bg-blue-500/20 text-blue-400" },
-];
+interface TrendingSpot {
+  _id: string;
+  name: string;
+  category: string;
+  rating: number;
+  featuredImage: string;
+  location: {
+    city: string;
+    address: string;
+  };
+}
 
 export default function Home() {
+  const router = useRouter();
+  const [trendingSpots, setTrendingSpots] = useState<TrendingSpot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrendingSpots = async () => {
+      try {
+        // Fetch top 3 spots sorted by views (descending)
+        const response = await api.get<{ spots: TrendingSpot[] }>('/spots?sort=-views&limit=3');
+        if (response.success && response.data?.spots) {
+          setTrendingSpots(response.data.spots);
+        }
+      } catch (error) {
+        console.error("Failed to fetch trending spots:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrendingSpots();
+  }, []);
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('search') as string;
+    if (query.trim()) {
+      router.push(`/discover?q=${encodeURIComponent(query)}`);
+    } else {
+      router.push('/discover');
+    }
+  };
+
   return (
     <main className="min-h-screen bg-background selection:bg-primary/30">
       <Navbar />
@@ -75,12 +87,7 @@ export default function Home() {
             {/* Quick Search */}
             <div className="max-w-2xl mx-auto mb-8">
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-                  const query = formData.get('search') as string;
-                  window.location.href = query ? `/discover?q=${encodeURIComponent(query)}` : '/discover';
-                }}
+                onSubmit={handleSearch}
                 className="relative group"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl group-hover:blur-2xl group-focus-within:blur-2xl transition-all" />
@@ -96,7 +103,7 @@ export default function Home() {
                       className="flex-1 bg-transparent border-none outline-none text-base text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
-                  <Button type="submit" as="button" size="lg" className="rounded-full shrink-0 px-4 sm:px-8">
+                  <Button type="submit" size="lg" className="rounded-full shrink-0 px-4 sm:px-8">
                     <span className="hidden sm:inline">Explore</span>
                     <ArrowRight className="w-5 h-5 sm:hidden" />
                   </Button>
@@ -129,49 +136,67 @@ export default function Home() {
               <h2 className="text-4xl font-bold mb-2">Trending Now</h2>
               <p className="text-muted-foreground">The hottest spots in the city everyone is talking about.</p>
             </div>
-            <Button variant="ghost" className="hidden md:inline-flex group">
-              View All <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <Link href="/discover?sort=-views">
+              <Button variant="ghost" className="hidden md:inline-flex group">
+                View All <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {FEATURED_SPOTS.map((spot, i) => (
-              <motion.div
-                key={spot.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="group relative cursor-pointer"
-              >
-                <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-white/10">
-                  <Image
-                    src={spot.image}
-                    alt={spot.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : trendingSpots.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {trendingSpots.map((spot, i) => (
+                <Link key={spot._id} href={`/spot/${spot._id}`}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1, duration: 0.5 }}
+                    className="group relative cursor-pointer"
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-white/10">
+                      <Image
+                        src={spot.featuredImage || '/placeholder-spot.jpg'}
+                        alt={spot.name}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
 
-                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium">
-                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating}
-                  </div>
+                      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium">
+                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating || "New"}
+                      </div>
 
-                  <div className="absolute bottom-0 left-0 p-6 w-full">
-                    <span className="text-xs font-medium text-primary bg-primary/20 px-2 py-1 rounded-md mb-3 inline-block border border-primary/20">
-                      {spot.category}
-                    </span>
-                    <h3 className="text-2xl font-bold mb-1 text-white group-hover:text-primary transition-colors">{spot.name}</h3>
-                    <div className="flex items-center gap-2 text-white/60 text-sm">
-                      <MapPin className="w-4 h-4" /> {spot.location}
+                      <div className="absolute bottom-0 left-0 p-6 w-full">
+                        <span className="text-xs font-medium text-primary bg-primary/20 px-2 py-1 rounded-md mb-3 inline-block border border-primary/20">
+                          {spot.category}
+                        </span>
+                        <h3 className="text-2xl font-bold mb-1 text-white group-hover:text-primary transition-colors">{spot.name}</h3>
+                        <div className="flex items-center gap-2 text-white/60 text-sm">
+                          <MapPin className="w-4 h-4" /> {spot.location?.city || "City Center"}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <p className="text-muted-foreground">No trending spots found yet. Be the first to add one!</p>
+              <Link href="/business">
+                <Button variant="outline" className="mt-4">List Your Spot</Button>
+              </Link>
+            </div>
+          )}
 
           <div className="mt-8 text-center md:hidden">
-            <Button variant="outline" className="w-full">View All</Button>
+            <Link href="/discover">
+              <Button variant="outline" className="w-full">View All</Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -184,10 +209,10 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { name: "Dining", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop", color: "from-orange-500/80 to-red-500/80" },
-              { name: "Nightlife", image: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=1740&auto=format&fit=crop", color: "from-purple-500/80 to-indigo-500/80" },
-              { name: "Cafes", image: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1678&auto=format&fit=crop", color: "from-yellow-500/80 to-amber-500/80" },
-              { name: "Hotels", image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1740&auto=format&fit=crop", color: "from-blue-500/80 to-cyan-500/80" },
+              { name: "Food & Cafes", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop", color: "from-orange-500/80 to-red-500/80" },
+              { name: "Entertainment", image: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=1740&auto=format&fit=crop", color: "from-purple-500/80 to-indigo-500/80" },
+              { name: "Health & Wellness", image: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=2089&auto=format&fit=crop", color: "from-yellow-500/80 to-amber-500/80" }, // Updated
+              { name: "Real Estate", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=2073&auto=format&fit=crop", color: "from-blue-500/80 to-cyan-500/80" }, // Updated
             ].map((cat, i) => (
               <Link key={cat.name} href={`/discover?category=${encodeURIComponent(cat.name)}`}>
                 <motion.div
