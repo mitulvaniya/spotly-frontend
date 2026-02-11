@@ -216,7 +216,7 @@ function DiscoverContent() {
                             {(activeFilterCount > 0) && (
                                 <button
                                     onClick={() => {
-                                        setFilters({ budget: [], minRating: 0, categories: [] });
+                                        setFilters({ budget: [], minRating: 0, categories: [], maxDistance: 50 });
                                         setSearchQuery("");
                                     }}
                                     className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
@@ -301,7 +301,7 @@ function DiscoverContent() {
                                     Try adjusting your search or filters.
                                 </p>
                                 <Button onClick={() => {
-                                    setFilters({ budget: [], minRating: 0, categories: [] });
+                                    setFilters({ budget: [], minRating: 0, categories: [], maxDistance: 50 });
                                     setSearchQuery("");
                                 }}>
                                     Clear All Filters
