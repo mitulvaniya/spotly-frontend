@@ -1,75 +1,69 @@
 @import "tailwindcss";
 
-
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Light Mode Defaults */
-  --background: #ffffff;
-  --foreground: #09090b;
+  /* Premium Light Mode (Alabaster & Gold) */
+  --background: #fdfdfd;   /* Off-white, softer than pure white */
+  --foreground: #1a1a1a;   /* Soft Black */
 
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #1a1a1a;
 
   --popover: #ffffff;
-  --popover-foreground: #09090b;
+  --popover-foreground: #1a1a1a;
 
-  --primary: #4f46e5;
-  /* Indigo 600 */
+  --primary: #c6a87c;      /* Antique Brass / Muted Gold */
   --primary-foreground: #ffffff;
 
-  --secondary: #f472b6;
-  /* Pink 400 */
-  --secondary-foreground: #0f172a;
+  --secondary: #f4f4f5;    /* Zinc 100 - Very subtle gray */
+  --secondary-foreground: #18181b;
 
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
 
-  --accent: #f4f4f5;
+  --accent: #fafafa;
   --accent-foreground: #18181b;
 
-  --destructive: #ef4444;
+  --destructive: #991b1b;  /* Deep Red, less alarming */
   --destructive-foreground: #fafafa;
 
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #4f46e5;
+  --ring: #c6a87c;
 
-  --radius: 0.75rem;
+  --radius: 0.5rem;        /* Sharper corners for a more modern/technical feel */
 }
 
 .dark {
-  /* Premium Dark Mode Overrides */
-  --background: #050505;
-  --foreground: #fafafa;
+  /* Premium Dark Mode (Obsidian & Gold) */
+  --background: #050505;   /* Pure Black/Deep Obsidian */
+  --foreground: #ededed;   /* Soft White */
 
-  --card: #0a0a0a;
-  --card-foreground: #fafafa;
+  --card: #0a0a0a;         /* Almost Black */
+  --card-foreground: #ededed;
 
   --popover: #0a0a0a;
-  --popover-foreground: #fafafa;
+  --popover-foreground: #ededed;
 
-  --primary: #6366f1;
-  /* Indigo 500 */
-  --primary-foreground: #ffffff;
+  --primary: #d4b886;      /* Lighter Gold for dark mode contrast */
+  --primary-foreground: #000000;
 
-  --secondary: #ec4899;
-  /* Pink 500 */
-  --secondary-foreground: #ffffff;
+  --secondary: #27272a;    /* Zinc 800 */
+  --secondary-foreground: #fafafa;
 
-  --muted: #27272a;
+  --muted: #18181b;
   --muted-foreground: #a1a1aa;
 
-  --accent: #27272a;
+  --accent: #18181b;
   --accent-foreground: #fafafa;
 
-  --destructive: #ef4444;
+  --destructive: #7f1d1d;
   --destructive-foreground: #fafafa;
 
-  --border: #27272a;
+  --border: #27272a;       /* Dark borders */
   --input: #27272a;
-  --ring: #6366f1;
+  --ring: #d4b886;
 }
 
 @theme inline {
@@ -101,8 +95,8 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 1px);
   --radius-lg: var(--radius);
 
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
@@ -112,19 +106,25 @@
 /* Premium Utilities */
 @layer utilities {
   .glass {
-    @apply bg-white/60 dark:bg-white/5 backdrop-blur-lg border border-black/5 dark:border-white/10;
+    @apply bg-white/70 dark:bg-black/60 backdrop-blur-xl border border-white/20 dark:border-white/5;
   }
 
   .glass-card {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-lg dark:shadow-xl;
+    @apply bg-white/50 dark:bg-[#0a0a0a]/80 backdrop-blur-md border border-black/5 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300;
   }
 
+  /* Luxurious Gold Gradient Text */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-secondary;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#bf953f] via-[#fcf6ba] to-[#b38728]; 
+    /* Or the simpler version if that's too much: from-primary to-primary/60 */
+  }
+  
+  .text-gradient-subtle {
+      @apply bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70;
   }
 
   .animate-enter {
-    @apply opacity-0 translate-y-4 animate-[enter_0.6s_ease-out_forwards];
+    @apply opacity-0 translate-y-4 animate-[enter_0.8s_cubic-bezier(0.16,1,0.3,1)_forwards];
   }
 }
 
@@ -136,5 +136,5 @@
 }
 
 body {
-  @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
+  @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary;
 }
