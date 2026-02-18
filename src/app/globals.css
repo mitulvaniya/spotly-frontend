@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Modern Tech Light Mode */
+  /* Real World Professional Light Mode */
   --background: #ffffff;
   --foreground: #09090b;
 
@@ -13,12 +13,12 @@
   --popover: #ffffff;
   --popover-foreground: #09090b;
 
-  --primary: #18181b;
-  /* Zinc 950 */
-  --primary-foreground: #fafafa;
+  --primary: #09090b;
+  /* Solid Black */
+  --primary-foreground: #ffffff;
 
   --secondary: #f4f4f5;
-  /* Zinc 100 */
+  /* Gray-100 */
   --secondary-foreground: #18181b;
 
   --muted: #f4f4f5;
@@ -32,32 +32,33 @@
 
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #18181b;
+  --ring: #09090b;
 
   --radius: 0.5rem;
-  /* Smooth, standard radius */
+  /* Standard, clean radius */
+
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-outfit);
 }
 
 .dark {
-  /* Modern Tech Dark Mode (Vercel/Linear Style) */
-  --background: #000000;
-  /* Pure Black Base */
-  --foreground: #ededed;
-  /* Soft White */
+  /* Real World Professional Dark Mode */
+  --background: #09090b;
+  /* Rich Black (not pitch black) */
+  --foreground: #fafafa;
 
-  --card: #0a0a0a;
-  /* Deep Zinc */
-  --card-foreground: #ededed;
+  --card: #18181b;
+  /* Zinc-900 */
+  --card-foreground: #fafafa;
 
-  --popover: #0a0a0a;
-  --popover-foreground: #ededed;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
 
   --primary: #fafafa;
-  /* White Primary */
+  /* Solid White */
   --primary-foreground: #09090b;
 
   --secondary: #27272a;
-  /* Zinc 800 */
   --secondary-foreground: #fafafa;
 
   --muted: #27272a;
@@ -70,9 +71,8 @@
   --destructive-foreground: #fafafa;
 
   --border: #27272a;
-  /* Subtle dark borders */
   --input: #27272a;
-  --ring: #fafafa;
+  --ring: #d4d4d8;
 }
 
 @theme inline {
@@ -112,31 +112,31 @@
   --font-heading: var(--font-outfit);
 }
 
-/* Modern Tech Utilities */
+/* Minimal Utilities */
 @layer utilities {
   .glass {
-    @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border-b border-black/5 dark:border-white/10;
+    @apply bg-white/95 dark:bg-black/95 backdrop-blur-sm border border-border;
   }
 
   .glass-card {
-    @apply bg-white/50 dark:bg-[#0a0a0a]/50 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-sm hover:shadow-md hover:border-black/10 dark:hover:border-white/20 transition-all duration-300;
+    @apply bg-card border border-border shadow-sm transition-all duration-200 hover:shadow-md;
   }
 
-  /* Subtle Tech Gradient Text */
+  /* Utilities removed for professional clean look */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400;
+    @apply text-foreground;
   }
 
   .text-gradient-blue {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-violet-400;
+    @apply text-foreground;
   }
 
   .animate-enter {
-    @apply opacity-0 translate-y-4 animate-[enter_0.6s_cubic-bezier(0.16, 1, 0.3, 1)_forwards];
+    @apply opacity-0 translate-y-4 animate-[enter_0.5s_ease-out_forwards];
   }
 
   .glow {
-    @apply shadow-[0_0_20px_-5px_rgba(255, 255, 255, 0.1)] dark:shadow-[0_0_20px_-5px_rgba(255, 255, 255, 0.05)];
+    @apply shadow-none;
   }
 }
 
@@ -148,5 +148,5 @@
 }
 
 body {
-  @apply bg-background text-foreground antialiased selection:bg-white/20 selection:text-white;
+  @apply bg-background text-foreground antialiased;
 }

@@ -65,11 +65,8 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Abstract Background */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/10 blur-[120px] animate-pulse" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
-        </div>
+        {/* Clean Background - Removed Noise/Blobs */}
+        <div className="absolute inset-0 z-0 bg-background" />
 
         <div className="container relative z-10 px-6 text-center max-w-5xl mx-auto">
           <motion.div
@@ -92,7 +89,7 @@ export default function Home() {
                 onSubmit={handleSearch}
                 className="relative group"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-xl group-hover:blur-2xl group-focus-within:blur-2xl transition-all" />
+                <div className="absolute inset-0" />
                 <div className="relative bg-card border border-border rounded-full p-2 flex items-center justify-between gap-3 group-focus-within:border-primary transition-all">
                   <div className="pl-4 flex items-center gap-2 text-muted-foreground flex-1">
                     <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
