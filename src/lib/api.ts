@@ -35,6 +35,14 @@ async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise
 
         if (!response.ok) {
             console.error(`API Error ${response.status}:`, data);
+
+            // Handle 401 Unauthorized (Stale/Invalid Token)
+            if (response.status === 401 && typeof window !== "undefined") {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                // Optional: window.location.href = "/signin";
+            }
+
             return {
                 success: false,
                 message: data.message || `Error ${response.status}: ${response.statusText}`,

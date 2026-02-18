@@ -36,6 +36,7 @@ SPOTLY is a modern, high-performance web application for discovering the best di
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:5000/api
    NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
+   GEMINI_API_KEY=your_gemini_api_key
    ```
 
 4. **Run Development Server:**

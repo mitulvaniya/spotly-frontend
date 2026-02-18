@@ -11,11 +11,13 @@ import { useState, useEffect } from "react";
 import { Sparkles, Heart, Menu, X, User, LogOut } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { authApi } from "@/lib/api";
+import { AIPlannerModal } from "@/components/ai/AIPlannerModal";
 
 export function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
     useEffect(() => {
         // Check if user is logged in
@@ -33,7 +35,6 @@ export function Navbar() {
         { name: "Trending", href: "/trending" },
         { name: "Categories", href: "/categories" },
         { name: "For Business", href: "/business" },
-        { name: "AI Concierge", href: "/ai" },
     ];
 
     return (
@@ -68,18 +69,18 @@ export function Navbar() {
                         <ThemeToggle />
                     </Tooltip>
 
-                    <Link href="/ai">
+                    <div onClick={() => setIsAIModalOpen(true)}>
                         <Tooltip text="Ask AI Host">
                             <Button
                                 variant="secondary"
                                 size="sm"
                                 as="div"
-                                className="gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-300 hover:from-indigo-500/20 hover:to-purple-500/20"
+                                className="gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-300 hover:from-indigo-500/20 hover:to-purple-500/20 cursor-pointer"
                             >
                                 <Sparkles className="w-4 h-4" /> Ask AI
                             </Button>
                         </Tooltip>
-                    </Link>
+                    </div>
 
                     <Link href="/saved">
                         <Tooltip text="Your Collection">
@@ -148,6 +149,11 @@ export function Navbar() {
                     </button>
                 </div>
             </div>
+
+            <AIPlannerModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+            />
 
             {/* Mobile Menu */}
             <AnimatePresence>

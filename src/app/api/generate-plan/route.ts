@@ -64,14 +64,19 @@ export async function POST(req: Request) {
       const response = await result.response;
       const text = response.text();
 
-      // 3. Clean and Parse
-      const cleanedText = text.replace(/```json|```/g, "").trim();
+      // 3. Clean and Parse (Robust cleaning)
+      const cleanedText = text.replace(/```json/g, "").replace(/```/g, "").trim();
 
       let data;
       if (mode === "chat") {
         data = { narrative: cleanedText, spots: [] };
       } else {
-        data = JSON.parse(cleanedText);
+        try {
+          data = JSON.parse(cleanedText);
+        } catch (parseError) {
+          console.error("Parse Error:", cleanedText);
+          throw new Error("Failed to parse AI response");
+        }
       }
 
       return NextResponse.json(data);

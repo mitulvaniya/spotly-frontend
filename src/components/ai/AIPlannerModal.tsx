@@ -14,15 +14,34 @@ interface AIPlannerModalProps {
 export function AIPlannerModal({ isOpen, onClose }: AIPlannerModalProps) {
     const [input, setInput] = useState("");
     const [step, setStep] = useState<"idle" | "loading" | "result">("idle");
+    const [itinerary, setItinerary] = useState<any[]>([]);
 
-    const handleSimulateAI = () => {
+    const handleGeneratePlan = async () => {
         if (!input.trim()) return;
         setStep("loading");
+        setItinerary([]);
 
-        // Fake AI Delay
-        setTimeout(() => {
+        try {
+            const res = await fetch("/api/ai/plan", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: input }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || "Failed to generate plan");
+            }
+
+            setItinerary(data.data);
             setStep("result");
-        }, 2000);
+        } catch (error) {
+            console.error(error);
+            // Reset to idle or show error state
+            setStep("idle");
+            alert("Sorry, I couldn't generate a plan right now. Please try again.");
+        }
     };
 
     return (
@@ -35,7 +54,7 @@ export function AIPlannerModal({ isOpen, onClose }: AIPlannerModalProps) {
                             <Bot className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="font-semibold mb-1">How can I allow you today?</h4>
+                            <h4 className="font-semibold mb-1">How can I help you today?</h4>
                             <p className="text-sm text-muted-foreground">
                                 I can plan a date, find hidden cafes, or suggest an itinerary based on your mood.
                             </p>
@@ -62,12 +81,13 @@ export function AIPlannerModal({ isOpen, onClose }: AIPlannerModalProps) {
                             onChange={(e) => setInput(e.target.value)}
                             placeholder="Tell me what you're looking for..."
                             className="w-full bg-background border border-input rounded-2xl py-4 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            onKeyDown={(e) => e.key === "Enter" && handleSimulateAI()}
+                            onKeyDown={(e) => e.key === "Enter" && handleGeneratePlan()}
                         />
                         <Button
                             size="sm"
-                            onClick={handleSimulateAI}
+                            onClick={handleGeneratePlan}
                             className="absolute right-2 top-2 h-10 w-10 p-0 rounded-xl"
+                            disabled={!input.trim()}
                         >
                             <Send className="w-4 h-4" />
                         </Button>
@@ -83,6 +103,7 @@ export function AIPlannerModal({ isOpen, onClose }: AIPlannerModalProps) {
                         className="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500"
                     />
                     <p className="text-lg font-medium animate-pulse">Curating the perfect plan...</p>
+                    <p className="text-sm text-muted-foreground">Consulting the digital spirits...</p>
                 </div>
             )}
 
@@ -93,33 +114,26 @@ export function AIPlannerModal({ isOpen, onClose }: AIPlannerModalProps) {
                     </div>
 
                     <div className="relative pl-6 border-l-2 border-indigo-500/30 space-y-8">
-                        <div className="relative">
-                            <span className="absolute -left-[31px] w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-background" />
-                            <h5 className="font-bold">7:00 PM • Sunset Coffee</h5>
-                            <p className="text-sm text-muted-foreground">Start at <span className="text-foreground font-medium">Brew & Bean</span>. Ask for the rooftop seat.</p>
-                        </div>
-                        <div className="relative">
-                            <span className="absolute -left-[31px] w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-background" />
-                            <h5 className="font-bold">8:30 PM • Dinner</h5>
-                            <p className="text-sm text-muted-foreground">Table reserved at <span className="text-foreground font-medium">Sakura Fusion</span>. Try the Dragon Roll.</p>
-                        </div>
-                        <div className="relative">
-                            <span className="absolute -left-[31px] w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-background" />
-                            <h5 className="font-bold">10:00 PM • Late Night Vibe</h5>
-                            <p className="text-sm text-muted-foreground">End the night at <span className="text-foreground font-medium">The Cloud Lounge</span> for jazz music.</p>
-                        </div>
+                        {itinerary.map((item, index) => (
+                            <div key={index} className="relative">
+                                <span className="absolute -left-[31px] w-4 h-4 rounded-full bg-indigo-500 ring-4 ring-background" />
+                                <h5 className="font-bold">{item.time} • {item.title}</h5>
+                                <p className="text-sm text-muted-foreground">
+                                    <span className="text-foreground font-medium block mb-1">{item.location}</span>
+                                    {item.description}
+                                </p>
+                            </div>
+                        ))}
                     </div>
 
-                    <Button className="w-full gap-2" onClick={onClose}>
-                        <MapPin className="w-4 h-4" /> View Map Route
-                    </Button>
-
-                    <button
-                        onClick={() => { setStep("idle"); setInput(""); }}
-                        className="w-full text-center text-sm text-muted-foreground hover:text-foreground mt-2"
-                    >
-                        Ask something else
-                    </button>
+                    <div className="flex gap-3">
+                        <Button className="flex-1 gap-2" variant="outline" onClick={() => { setStep("idle"); setInput(""); }}>
+                            Ask Again
+                        </Button>
+                        <Button className="flex-1 gap-2" onClick={onClose}>
+                            <MapPin className="w-4 h-4" /> Done
+                        </Button>
+                    </div>
                 </div>
             )}
 
