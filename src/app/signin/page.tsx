@@ -87,7 +87,7 @@ export default function SignInPage() {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.type]: e.target.value });
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -150,6 +150,7 @@ export default function SignInPage() {
                                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                                         <input
                                             type="email"
+                                            name="email"
                                             value={formData.email}
                                             onChange={handleChange}
                                             placeholder="hello@example.com"
@@ -164,6 +165,7 @@ export default function SignInPage() {
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                                         <input
                                             type="password"
+                                            name="password"
                                             value={formData.password}
                                             onChange={handleChange}
                                             placeholder="••••••••"
