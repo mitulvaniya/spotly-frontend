@@ -160,11 +160,12 @@ export default function Home() {
                     className="group relative cursor-pointer"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-white/10">
-                      <Image
-                        src={spot.featuredImage || '/placeholder-spot.jpg'}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={spot.featuredImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'}
                         alt={spot.name}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'; }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
 
@@ -225,11 +226,12 @@ export default function Home() {
                   className="group relative h-96 rounded-3xl overflow-hidden cursor-pointer"
                 >
                   {/* Background Image */}
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={cat.image}
                     alt={cat.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'; }}
                   />
 
                   {/* Gradient Overlay */}

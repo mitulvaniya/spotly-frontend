@@ -109,11 +109,12 @@ export default function TrendingPage() {
                                         <div className="flex flex-col md:flex-row gap-6 p-4">
                                             {/* Image */}
                                             <div className="relative w-full md:w-72 h-48 md:h-auto md:min-h-[240px] shrink-0 rounded-2xl overflow-hidden">
-                                                <Image
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
                                                     src={spot.image}
                                                     alt={spot.name}
-                                                    fill
-                                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'; }}
                                                 />
                                                 <div className="absolute top-3 left-3 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center font-bold shadow-lg z-10">
                                                     #{spot.rank}

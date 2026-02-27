@@ -252,11 +252,14 @@ function DiscoverContent() {
                                         >
                                             <Card spotId={spot._id} className="group cursor-pointer">
                                                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
-                                                    <Image
-                                                        src={spot.featuredImage || '/placeholder-spot.jpg'}
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={spot.featuredImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'}
                                                         alt={spot.name}
-                                                        fill
-                                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800';
+                                                        }}
                                                     />
                                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold border border-white/10">
                                                         <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating || "New"}
