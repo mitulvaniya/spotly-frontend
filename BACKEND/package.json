@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "ts-node src/scripts/seed.ts",
+    "seed:surat": "ts-node src/scripts/seed-surat.ts",
     "lint": "eslint src/**/*.ts",
     "test": "jest"
   },
