@@ -5,8 +5,8 @@ import { Footer } from "@/components/layout/Footer";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { Button } from "@/components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, Users, Store, Plus, DollarSign, X, Loader2, Edit, Trash2, Eye } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BarChart3, Users, Store, Plus, DollarSign, X, Loader2, Eye, Upload, ImageIcon } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, api } from "@/lib/api";
 import { toast } from "sonner";
@@ -16,6 +16,8 @@ const CATEGORIES = [
     "Health & Wellness", "Education & Training", "Real Estate",
     "Automotive", "Entertainment", "Events & Weddings",
 ];
+
+const API_URL = "https://spotly-frontend.onrender.com/api";
 
 interface Spot {
     _id: string;
@@ -36,6 +38,12 @@ export default function BusinessDashboardPage() {
     const [showModal, setShowModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Image file state
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>("");
+    const [isDragging, setIsDragging] = useState(false);
+
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -47,7 +55,6 @@ export default function BusinessDashboardPage() {
         website: "",
         tags: "",
         priceRange: "$$",
-        featuredImage: "",
     });
 
     // Auth Guard
@@ -69,8 +76,6 @@ export default function BusinessDashboardPage() {
         try {
             const res = await api.get<{ spots: Spot[] }>("/spots?limit=100");
             if (res.success && res.data?.spots) {
-                const currentUser = authApi.getCurrentUser();
-                // Show all spots (admin sees all, owner sees their own)
                 setSpots(res.data.spots);
             }
         } catch (e) {
@@ -80,50 +85,102 @@ export default function BusinessDashboardPage() {
         }
     };
 
+    // Handle file selection
+    const handleFileSelect = (file: File) => {
+        if (!file.type.startsWith("image/")) {
+            toast.error("Please select an image file.");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image must be under 5MB.");
+            return;
+        }
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onload = (e) => setImagePreview(e.target?.result as string);
+        reader.readAsDataURL(file);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer.files[0];
+        if (file) handleFileSelect(file);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name || !formData.description || !formData.category || !formData.address || !formData.city || !formData.featuredImage) {
-            toast.error("Please fill in all required fields including image URL.");
+        if (!formData.name || !formData.description || !formData.category || !formData.address || !formData.city) {
+            toast.error("Please fill in all required fields.");
+            return;
+        }
+        if (!selectedFile) {
+            toast.error("Please select an image for your spot.");
             return;
         }
 
         setIsSubmitting(true);
         try {
-            const payload = {
-                name: formData.name,
-                description: formData.description,
-                category: formData.category,
-                subcategory: formData.subcategory,
-                location: {
-                    address: formData.address,
-                    city: formData.city,
-                    coordinates: { type: "Point", coordinates: [72.8311, 21.1702] }, // Default Surat
-                },
-                contact: {
-                    phone: formData.phone,
-                    website: formData.website,
-                },
-                featuredImage: formData.featuredImage,
-                images: [formData.featuredImage],
-                priceRange: formData.priceRange,
-                tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
-                features: [],
-            };
+            const token = localStorage.getItem("token");
+            const fd = new FormData();
 
-            const res = await api.post<any>("/spots", payload);
-            if (res.success) {
-                toast.success("Spot added successfully! It will be reviewed and approved shortly.");
+            // Append text fields
+            fd.append("name", formData.name);
+            fd.append("description", formData.description);
+            fd.append("category", formData.category);
+            if (formData.subcategory) fd.append("subcategory", formData.subcategory);
+            fd.append("priceRange", formData.priceRange);
+
+            // Nested objects must be JSON strings
+            fd.append("location[address]", formData.address);
+            fd.append("location[city]", formData.city);
+            fd.append("location[coordinates][type]", "Point");
+            fd.append("location[coordinates][coordinates][]", "72.8311");
+            fd.append("location[coordinates][coordinates][]", "21.1702");
+
+            if (formData.phone) fd.append("contact[phone]", formData.phone);
+            if (formData.website) fd.append("contact[website]", formData.website);
+
+            if (formData.tags) {
+                formData.tags.split(",").map(t => t.trim()).filter(Boolean).forEach(tag => {
+                    fd.append("tags[]", tag);
+                });
+            }
+
+            // Append the actual image file
+            fd.append("featuredImage", selectedFile);
+
+            const response = await fetch(`${API_URL}/spots`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    // DO NOT set Content-Type — browser sets it with boundary automatically for FormData
+                },
+                body: fd,
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                toast.success("Spot added! It will be reviewed and approved shortly. 🎉");
                 setShowModal(false);
-                setFormData({ name: "", description: "", category: "", subcategory: "", address: "", city: "", phone: "", website: "", tags: "", priceRange: "$$", featuredImage: "" });
+                resetForm();
                 fetchMySpots();
             } else {
-                toast.error(res.message || "Failed to add spot. Make sure you're signed in as a Business Owner.");
+                toast.error(result.message || "Failed to add spot. Make sure you're signed in as a Business Owner.");
             }
         } catch (err) {
+            console.error(err);
             toast.error("Something went wrong. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const resetForm = () => {
+        setFormData({ name: "", description: "", category: "", subcategory: "", address: "", city: "", phone: "", website: "", tags: "", priceRange: "$$" });
+        setSelectedFile(null);
+        setImagePreview("");
     };
 
     const stats = [
@@ -193,7 +250,7 @@ export default function BusinessDashboardPage() {
                             </div>
                         ) : (
                             <div className="divide-y divide-white/10">
-                                {spots.map((spot, i) => (
+                                {spots.map((spot) => (
                                     <div key={spot._id} className="p-6 flex items-center gap-4 hover:bg-white/5 transition-colors">
                                         <div className="w-16 h-16 rounded-xl bg-muted overflow-hidden shrink-0">
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -231,7 +288,7 @@ export default function BusinessDashboardPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={() => setShowModal(false)}
+                            onClick={() => { setShowModal(false); resetForm(); }}
                             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
                         />
                         <motion.div
@@ -244,7 +301,7 @@ export default function BusinessDashboardPage() {
                             <div className="bg-background border border-border rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
                                 <div className="flex items-center justify-between p-6 border-b border-border sticky top-0 bg-background z-10">
                                     <h2 className="text-2xl font-bold">Add New Spot</h2>
-                                    <button onClick={() => setShowModal(false)} className="p-2 hover:bg-muted rounded-full">
+                                    <button onClick={() => { setShowModal(false); resetForm(); }} className="p-2 hover:bg-muted rounded-full">
                                         <X className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -257,7 +314,7 @@ export default function BusinessDashboardPage() {
                                         </div>
 
                                         <div className="md:col-span-2">
-                                            <label className="text-sm font-medium mb-1 block">Description * (min 10 characters)</label>
+                                            <label className="text-sm font-medium mb-1 block">Description *</label>
                                             <textarea required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} placeholder="Describe what makes this spot special..." className="w-full bg-muted border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary resize-none" />
                                         </div>
 
@@ -309,22 +366,59 @@ export default function BusinessDashboardPage() {
                                             <input value={formData.tags} onChange={e => setFormData({ ...formData, tags: e.target.value })} placeholder="Cafe, WiFi, Vegan" className="w-full bg-muted border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary" />
                                         </div>
 
+                                        {/* === FILE UPLOAD SECTION === */}
                                         <div className="md:col-span-2">
-                                            <label className="text-sm font-medium mb-1 block">Featured Image URL *</label>
-                                            <input required value={formData.featuredImage} onChange={e => setFormData({ ...formData, featuredImage: e.target.value })} placeholder="https://images.unsplash.com/photo-..." className="w-full bg-muted border border-border rounded-xl px-4 py-3 focus:outline-none focus:border-primary" />
-                                            {formData.featuredImage && (
-                                                <div className="mt-2 rounded-xl overflow-hidden h-32 border border-border">
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img src={formData.featuredImage} alt="preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                                                </div>
-                                            )}
+                                            <label className="text-sm font-medium mb-2 block">Featured Image * <span className="text-muted-foreground font-normal">(JPG, PNG, WEBP — max 5MB)</span></label>
+
+                                            {/* Drop Zone */}
+                                            <div
+                                                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                                onDragLeave={() => setIsDragging(false)}
+                                                onDrop={handleDrop}
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className={`relative border-2 border-dashed rounded-2xl cursor-pointer transition-all ${isDragging ? "border-primary bg-primary/10" : "border-border hover:border-primary/50 hover:bg-muted/30"}`}
+                                            >
+                                                {imagePreview ? (
+                                                    <div className="relative">
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-2xl" />
+                                                        <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                                            <p className="text-white text-sm font-medium flex items-center gap-2"><Upload className="w-4 h-4" /> Click to change image</p>
+                                                        </div>
+                                                        {/* File name badge */}
+                                                        <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full">
+                                                            ✅ {selectedFile?.name}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                                                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 border border-primary/20">
+                                                            <ImageIcon className="w-7 h-7 text-primary" />
+                                                        </div>
+                                                        <p className="font-semibold text-foreground mb-1">Drop your image here</p>
+                                                        <p className="text-sm text-muted-foreground">or <span className="text-primary font-medium">click to browse</span> from your device</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Hidden file input */}
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={e => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) handleFileSelect(file);
+                                                }}
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="flex gap-3 pt-2">
-                                        <Button type="button" variant="outline" className="flex-1" onClick={() => setShowModal(false)}>Cancel</Button>
+                                        <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowModal(false); resetForm(); }}>Cancel</Button>
                                         <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                                            {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Adding...</> : <><Plus className="w-4 h-4 mr-2" /> Add Spot</>}
+                                            {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading & Adding...</> : <><Plus className="w-4 h-4 mr-2" /> Add Spot</>}
                                         </Button>
                                     </div>
                                 </form>
