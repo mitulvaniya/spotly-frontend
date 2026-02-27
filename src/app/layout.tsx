@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import React from "react";
-import { Outfit, Inter } from "next/font/google";
+import { Outfit, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -14,6 +14,11 @@ const outfit = Outfit({
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
 });
 
@@ -51,6 +56,7 @@ export default function RootLayout({
         className={cn(
           outfit.variable,
           inter.variable,
+          playfair.variable,
           "font-sans antialiased bg-background text-foreground min-h-screen"
         )}
       >

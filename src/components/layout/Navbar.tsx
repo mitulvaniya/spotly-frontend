@@ -72,10 +72,10 @@ export function Navbar() {
                     <div onClick={() => setIsAIModalOpen(true)}>
                         <Tooltip text="Ask AI Host">
                             <Button
-                                variant="outline"
+                                variant="secondary"
                                 size="sm"
                                 as="div"
-                                className="gap-2 cursor-pointer border-dashed"
+                                className="gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-300 hover:from-indigo-500/20 hover:to-purple-500/20 cursor-pointer"
                             >
                                 <Sparkles className="w-4 h-4" /> Ask AI
                             </Button>
