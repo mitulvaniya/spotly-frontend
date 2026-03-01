@@ -22,6 +22,19 @@ const SUGGESTIONS = [
     { icon: Star, text: "Fancy dinner on a not-so-fancy budget", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" },
 ];
 
+// Strip markdown symbols from AI responses for clean display
+function cleanResponse(text: string): string {
+    return text
+        .replace(/\*\*(.+?)\*\*/g, '$1')
+        .replace(/\*(.+?)\*/g, '$1')
+        .replace(/^#{1,6}\s+/gm, '')
+        .replace(/^[-]\s+/gm, '• ')
+        .replace(/\$\$\$\$/g, 'bougie expensive')
+        .replace(/\$\$\$/g, 'pricey')
+        .replace(/\$\$/g, 'mid-range')
+        .trim();
+}
+
 export default function AIPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState("");
@@ -58,7 +71,7 @@ export default function AIPage() {
             const data = await response.json();
 
             if (data.success && data.data?.response) {
-                setMessages(prev => [...prev, { role: "ai", text: data.data.response }]);
+                setMessages(prev => [...prev, { role: "ai", text: cleanResponse(data.data.response) }]);
             } else {
                 setMessages(prev => [...prev, {
                     role: "ai",
@@ -193,11 +206,9 @@ export default function AIPage() {
                                                 : "bg-primary text-primary-foreground rounded-tr-sm"
                                         )}>
                                             {msg.role === "ai" ? (
-                                                <div className="whitespace-pre-wrap prose prose-sm prose-invert max-w-none">
-                                                    {msg.text.split('\n').map((line, i) => (
-                                                        <p key={i} className={cn("mb-1", line.trim() === "" && "mb-3")}>
-                                                            {line || "\u00A0"}
-                                                        </p>
+                                                <div className="space-y-3">
+                                                    {msg.text.split('\n').filter(line => line.trim()).map((line, i) => (
+                                                        <p key={i} className="leading-relaxed">{line}</p>
                                                     ))}
                                                 </div>
                                             ) : (
