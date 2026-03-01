@@ -4,8 +4,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Edit3, Trash2, Plus, Loader2, Save, X, Search, Eye, Star, MapPin, Image as ImageIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Shield, Edit3, Trash2, Plus, Loader2, Save, X, Search, Eye, Star, MapPin, Image as ImageIcon, Upload } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { api, authApi } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -54,6 +54,9 @@ export default function AdminPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Check admin auth
     useEffect(() => {
@@ -83,38 +86,78 @@ export default function AdminPage() {
 
     const handleEdit = (spot: Spot) => {
         setEditingSpot({ ...spot });
+        setImageFile(null);
+        setImagePreview(null);
         setIsEditModalOpen(true);
+    };
+
+    const handleFileSelect = (file: File) => {
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onload = (e) => setImagePreview(e.target?.result as string);
+        reader.readAsDataURL(file);
     };
 
     const handleSave = async () => {
         if (!editingSpot) return;
         setIsSaving(true);
         try {
-            const updateData = {
-                name: editingSpot.name,
-                description: editingSpot.description,
-                category: editingSpot.category,
-                featuredImage: editingSpot.featuredImage,
-                images: editingSpot.images,
-                priceRange: editingSpot.priceRange,
-                rating: editingSpot.rating,
-                tags: editingSpot.tags,
-                features: editingSpot.features,
-                location: editingSpot.location,
-                contact: editingSpot.contact,
-            };
+            let res;
 
-            const res = await api.put(`/spots/${editingSpot._id}`, updateData);
+            if (imageFile) {
+                // Use FormData for file upload
+                const formData = new FormData();
+                formData.append('featuredImage', imageFile);
+                formData.append('name', editingSpot.name);
+                formData.append('description', editingSpot.description || '');
+                formData.append('category', editingSpot.category);
+                formData.append('priceRange', editingSpot.priceRange || '$$');
+                formData.append('rating', String(editingSpot.rating || 0));
+                if (editingSpot.tags?.length) formData.append('tags', JSON.stringify(editingSpot.tags));
+                if (editingSpot.features?.length) formData.append('features', JSON.stringify(editingSpot.features));
+                if (editingSpot.location) formData.append('location', JSON.stringify(editingSpot.location));
+                if (editingSpot.contact) formData.append('contact', JSON.stringify(editingSpot.contact));
+
+                // Direct fetch with FormData (no Content-Type — browser sets multipart boundary)
+                const API_URL = 'https://spotly-frontend.onrender.com/api';
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/spots/${editingSpot._id}`, {
+                    method: 'PUT',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    body: formData,
+                });
+                const data = await response.json();
+                res = { success: response.ok, data: data.data, message: data.message };
+            } else {
+                // JSON update (no file)
+                const updateData = {
+                    name: editingSpot.name,
+                    description: editingSpot.description,
+                    category: editingSpot.category,
+                    featuredImage: editingSpot.featuredImage,
+                    images: editingSpot.images,
+                    priceRange: editingSpot.priceRange,
+                    rating: editingSpot.rating,
+                    tags: editingSpot.tags,
+                    features: editingSpot.features,
+                    location: editingSpot.location,
+                    contact: editingSpot.contact,
+                };
+                res = await api.put(`/spots/${editingSpot._id}`, updateData);
+            }
+
             if (res.success) {
-                toast.success("Spot updated successfully!");
+                toast.success('Spot updated successfully!');
                 setIsEditModalOpen(false);
                 setEditingSpot(null);
+                setImageFile(null);
+                setImagePreview(null);
                 fetchSpots();
             } else {
-                toast.error(res.message || "Failed to update");
+                toast.error(res.message || 'Failed to update');
             }
         } catch (err) {
-            toast.error("Failed to update spot");
+            toast.error('Failed to update spot');
         } finally {
             setIsSaving(false);
         }
@@ -342,22 +385,75 @@ export default function AdminPage() {
                             />
                         </div>
 
-                        {/* Featured Image URL */}
-                        <div className="space-y-1">
+                        {/* Featured Image */}
+                        <div className="space-y-2">
                             <label className="text-sm font-medium flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4" /> Featured Image URL
+                                <ImageIcon className="w-4 h-4" /> Featured Image
                             </label>
+
+                            {/* File Upload Zone */}
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const file = e.dataTransfer.files[0];
+                                    if (file && file.type.startsWith('image/')) handleFileSelect(file);
+                                }}
+                                className="w-full border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                            >
+                                <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                                <p className="text-sm text-muted-foreground">
+                                    {imageFile ? (
+                                        <span className="text-primary font-medium">{imageFile.name}</span>
+                                    ) : (
+                                        <>Click to upload or drag & drop an image</>
+                                    )}
+                                </p>
+                                <p className="text-xs text-muted-foreground/60 mt-1">JPG, PNG, WebP up to 5MB</p>
+                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleFileSelect(file);
+                                }}
+                            />
+
+                            {/* OR divider */}
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 h-px bg-border" />
+                                <span className="text-xs text-muted-foreground">OR paste URL</span>
+                                <div className="flex-1 h-px bg-border" />
+                            </div>
+
+                            {/* URL Input */}
                             <input
                                 type="text"
                                 value={editingSpot.featuredImage}
-                                onChange={(e) => setEditingSpot({ ...editingSpot, featuredImage: e.target.value })}
+                                onChange={(e) => { setEditingSpot({ ...editingSpot, featuredImage: e.target.value }); setImageFile(null); setImagePreview(null); }}
                                 className="w-full bg-muted/50 border border-border rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary text-sm"
                                 placeholder="https://images.unsplash.com/..."
                             />
-                            {editingSpot.featuredImage && (
-                                <div className="mt-2 w-full h-32 rounded-xl overflow-hidden bg-muted">
+
+                            {/* Preview */}
+                            {(imagePreview || editingSpot.featuredImage) && (
+                                <div className="mt-2 w-full h-36 rounded-xl overflow-hidden bg-muted relative">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={editingSpot.featuredImage} alt="Preview" className="w-full h-full object-cover" />
+                                    <img
+                                        src={imagePreview || editingSpot.featuredImage}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    {imageFile && (
+                                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-lg font-medium">
+                                            New Upload
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

@@ -8,7 +8,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { Logo } from "@/components/ui/Logo";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Heart, Menu, X, User, LogOut } from "lucide-react";
+import { Sparkles, Heart, Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { authApi } from "@/lib/api";
 
@@ -81,6 +81,21 @@ export function Navbar() {
                             </Button>
                         </Tooltip>
                     </Link>
+
+                    {user?.role === 'admin' && (
+                        <Link href="/admin">
+                            <Tooltip text="Admin Panel">
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    as="div"
+                                    className="gap-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 text-red-500 dark:text-red-300 hover:from-red-500/20 hover:to-orange-500/20 cursor-pointer"
+                                >
+                                    <Shield className="w-4 h-4" /> Admin
+                                </Button>
+                            </Tooltip>
+                        </Link>
+                    )}
 
                     <Link href="/saved">
                         <Tooltip text="Your Collection">
