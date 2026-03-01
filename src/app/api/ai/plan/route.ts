@@ -31,8 +31,15 @@ Common Sense Coffee — Specialty coffee in Vesu. Rated 4.6. Mid-range. "For peo
 VR Surat — Shopping mall on Dumas Road. Rated 4.5. Pricey. "Where your wallet comes to die."
 Leonardo Italian Mediterranean Dining — Upscale Italian in Piplod. Rated 4.7. Bougie expensive. "For pretending you're in Italy when you're clearly in Gujarat."
 Dumas Beach Food Stalls — Street food at Dumas Beach. Rated 4.4. Cheapest. "Bhajiya so good you'll forget about the ghost stories. Almost."
-Gopi Talav — Historic lake with boating. Rated 4.3. Budget-friendly. "Romantic until you see 47 other couples with the same idea."
+Gopi Talav — Historic lake with boating in Rustampura. Rated 4.3. Budget-friendly. "Romantic until you see 47 other couples with the same idea."
 Meraki Coffee House — Artisanal cafe in Adajan. Rated 4.7. Mid-range. "Where introverts pretend to work while people-watching."
+Dutch Garden — Beautiful colonial-era garden in Nanpura. Rated 4.2. Free entry. "For your morning walk and pretending you live in London."
+Surat Castle (Old Fort) — 16th century Mughal fort by the Tapi River. Rated 4.1. Free. "History class but actually interesting."
+Chopati (Athwa) — Evening street food hub at Athwa Gate. Rated 4.5. Budget-friendly. "Where Surat goes when dinner plans fail."
+Rangila Park — Amusement park with rides in Piplod. Rated 4.0. Mid-range. "Your childhood called, it wants you back."
+The Grand Bhagwati — Premium buffet and banquet hall at Athwa. Rated 4.6. Pricey. "Sunday brunch or bankruptcy. Same thing."
+Surat Science Centre — Interactive museum in Citylight. Rated 4.3. Budget-friendly. "Making nerds cool since forever."
+Sahara Darwaza Textile Market — Wholesale fabric market. Rated 4.4. Budget-friendly. "Where 40% of India's fabric is born."
 
 RULES:
 - When recommending spots, drop the funny description AND real details (area, rating, budget level).

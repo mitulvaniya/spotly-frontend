@@ -67,7 +67,7 @@ export default function SavedPage() {
                                         <div className="flex justify-between items-start mb-2">
                                             <h3 className="text-xl font-bold font-outfit text-foreground">{spot.name}</h3>
                                             {/* Fallback for price since it's missing in basic Type */}
-                                            <span className="text-sm font-medium text-primary">₹₹₹</span>
+                                            <span className="text-sm font-medium text-primary">{spot.price || "$$"}</span>
                                         </div>
                                         {/* Fallback for description */}
                                         <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
