@@ -14,12 +14,12 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-    { icon: Utensils, text: "Plan a romantic dinner in Surat", color: "text-pink-400 bg-pink-500/10 border-pink-500/20" },
-    { icon: Coffee, text: "Best cafes with WiFi for working", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
-    { icon: PartyPopper, text: "Weekend outing plan for friends", color: "text-purple-400 bg-purple-500/10 border-purple-500/20" },
-    { icon: Camera, text: "Hidden gems for photography", color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
-    { icon: MapPin, text: "Best street food near Dumas Beach", color: "text-green-400 bg-green-500/10 border-green-500/20" },
-    { icon: Star, text: "Top rated restaurants under ₹500", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" },
+    { icon: Utensils, text: "Plan a date night (hide my red flags)", color: "text-pink-400 bg-pink-500/10 border-pink-500/20" },
+    { icon: Coffee, text: "Cafes where I can pretend to work", color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
+    { icon: PartyPopper, text: "Weekend plan that I'll regret Monday", color: "text-purple-400 bg-purple-500/10 border-purple-500/20" },
+    { icon: Camera, text: "Instagram-worthy spots for clout", color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
+    { icon: MapPin, text: "Street food that's worth the calories", color: "text-green-400 bg-green-500/10 border-green-500/20" },
+    { icon: Star, text: "Fancy dinner on a not-so-fancy budget", color: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" },
 ];
 
 export default function AIPage() {
@@ -130,7 +130,7 @@ export default function AIPage() {
                                 transition={{ delay: 0.4 }}
                                 className="text-muted-foreground text-center text-lg mb-12 max-w-md"
                             >
-                                Your personal city concierge. Ask me anything about places to visit, eat, and explore in Surat! ✨
+                                Your brutally honest city concierge. I'll judge your choices AND find you the perfect spot. You're welcome. 💅
                             </motion.p>
 
                             {/* Suggestion Cards */}
