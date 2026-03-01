@@ -1,9 +1,9 @@
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
 const apiKey = process.env.GEMINI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+
+// Use v1 endpoint directly (not v1beta) for full model support
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
 const SYSTEM_PROMPT = `You are SPOTLY AI — a smart, friendly city concierge for Surat, India. You help people discover the best places, plan outings, and get local recommendations.
 
@@ -24,12 +24,44 @@ Guidelines:
 - Keep responses concise but informative (2-4 paragraphs max).
 - You can also answer general questions about Surat (weather, culture, transport).`;
 
-// Try multiple models in order of preference
-const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
+const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"];
+
+async function callGeminiREST(model: string, prompt: string): Promise<string> {
+    const url = `${GEMINI_API_URL}/${model}:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            contents: [
+                {
+                    parts: [{ text: prompt }]
+                }
+            ],
+            generationConfig: {
+                temperature: 0.8,
+                maxOutputTokens: 1024,
+            }
+        })
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData?.error?.message || `${response.status} ${response.statusText}`;
+        throw new Error(`${response.status}:${errorMsg}`);
+    }
+
+    const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+        throw new Error("No text in response");
+    }
+
+    return text;
+}
 
 async function tryGenerate(prompt: string, history: any[] = []) {
-    if (!genAI) throw new Error("API key not configured");
-
     const contextPrompt = `${SYSTEM_PROMPT}
 
 Conversation history:
@@ -39,31 +71,34 @@ User's latest message: "${prompt}"
 
 Respond naturally:`;
 
-    for (const modelName of MODELS_TO_TRY) {
+    let lastError: Error | null = null;
+
+    for (const model of MODELS_TO_TRY) {
         try {
-            const model = genAI.getGenerativeModel({ model: modelName });
-            const result = await model.generateContent(contextPrompt);
-            const response = await result.response;
-            return response.text();
+            return await callGeminiREST(model, contextPrompt);
         } catch (error: any) {
-            console.error(`Model ${modelName} failed:`, error.message);
-            // If it's a quota error, try the next model
+            console.error(`Model ${model} failed:`, error.message);
+            lastError = error;
+            // If it's a 429 or quota error, try next model
             if (error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("RESOURCE_EXHAUSTED")) {
                 continue;
             }
-            // For non-quota errors, throw immediately
-            throw error;
+            // If it's a 404 (model not found), try next model
+            if (error.message?.includes("404") || error.message?.includes("not found")) {
+                continue;
+            }
+            // For other errors, still try next model
+            continue;
         }
     }
 
-    // All models exhausted
-    throw new Error("QUOTA_EXHAUSTED");
+    throw lastError || new Error("All models failed");
 }
 
 export async function POST(req: Request) {
-    if (!genAI) {
+    if (!apiKey) {
         return NextResponse.json(
-            { success: false, message: "Gemini API key not configured. Please set GEMINI_API_KEY in Vercel." },
+            { success: false, message: "Gemini API key not configured. Please set GEMINI_API_KEY in your environment variables." },
             { status: 500 }
         );
     }
@@ -74,7 +109,7 @@ export async function POST(req: Request) {
 
         if (!prompt || typeof prompt !== "string") {
             return NextResponse.json(
-                { success: false, message: "Prompt is required" },
+                { success: false, message: "Please type a message first!" },
                 { status: 400 }
             );
         }
@@ -83,17 +118,17 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, data: { response: text } });
 
     } catch (error: any) {
-        console.error("AI Generation Error:", error);
+        console.error("AI Generation Error:", error.message);
 
-        if (error.message === "QUOTA_EXHAUSTED" || error.message?.includes("429") || error.message?.includes("quota")) {
+        if (error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("RESOURCE_EXHAUSTED")) {
             return NextResponse.json({
                 success: false,
-                message: "I'm getting too many requests right now! 🔥 The AI service is temporarily rate-limited. Please wait a minute and try again."
+                message: "I'm getting too many requests right now! 🔥 Please wait a minute and try again."
             }, { status: 429 });
         }
 
         return NextResponse.json(
-            { success: false, message: error.message || "AI generation failed. Please try again." },
+            { success: false, message: "Something went wrong with the AI. Please try again in a moment! 😔" },
             { status: 500 }
         );
     }
