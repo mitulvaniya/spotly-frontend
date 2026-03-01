@@ -57,7 +57,7 @@ async function callGeminiREST(model: string, prompt: string): Promise<string> {
             ],
             generationConfig: {
                 temperature: 0.8,
-                maxOutputTokens: 1024,
+                maxOutputTokens: 4096,
             }
         })
     });
