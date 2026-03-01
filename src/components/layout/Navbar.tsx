@@ -11,13 +11,13 @@ import { useState, useEffect } from "react";
 import { Sparkles, Heart, Menu, X, User, LogOut } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { authApi } from "@/lib/api";
-import { AIPlannerModal } from "@/components/ai/AIPlannerModal";
+
 
 export function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+
 
     useEffect(() => {
         // Check if user is logged in
@@ -69,7 +69,7 @@ export function Navbar() {
                         <ThemeToggle />
                     </Tooltip>
 
-                    <div onClick={() => setIsAIModalOpen(true)}>
+                    <Link href="/ai">
                         <Tooltip text="Ask AI Host">
                             <Button
                                 variant="secondary"
@@ -80,7 +80,7 @@ export function Navbar() {
                                 <Sparkles className="w-4 h-4" /> Ask AI
                             </Button>
                         </Tooltip>
-                    </div>
+                    </Link>
 
                     <Link href="/saved">
                         <Tooltip text="Your Collection">
@@ -150,10 +150,6 @@ export function Navbar() {
                 </div>
             </div>
 
-            <AIPlannerModal
-                isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
-            />
 
             {/* Mobile Menu */}
             <AnimatePresence>
