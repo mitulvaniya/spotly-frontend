@@ -102,49 +102,24 @@ export default function AdminPage() {
         if (!editingSpot) return;
         setIsSaving(true);
         try {
-            let res;
+            // If a file was uploaded, use the base64 preview as the image
+            const featuredImage = imagePreview || editingSpot.featuredImage;
 
-            if (imageFile) {
-                // Use FormData for file upload
-                const formData = new FormData();
-                formData.append('featuredImage', imageFile);
-                formData.append('name', editingSpot.name);
-                formData.append('description', editingSpot.description || '');
-                formData.append('category', editingSpot.category);
-                formData.append('priceRange', editingSpot.priceRange || '$$');
-                formData.append('rating', String(editingSpot.rating || 0));
-                if (editingSpot.tags?.length) formData.append('tags', JSON.stringify(editingSpot.tags));
-                if (editingSpot.features?.length) formData.append('features', JSON.stringify(editingSpot.features));
-                if (editingSpot.location) formData.append('location', JSON.stringify(editingSpot.location));
-                if (editingSpot.contact) formData.append('contact', JSON.stringify(editingSpot.contact));
+            const updateData = {
+                name: editingSpot.name,
+                description: editingSpot.description,
+                category: editingSpot.category,
+                featuredImage,
+                images: editingSpot.images,
+                priceRange: editingSpot.priceRange,
+                rating: editingSpot.rating,
+                tags: editingSpot.tags,
+                features: editingSpot.features,
+                location: editingSpot.location,
+                contact: editingSpot.contact,
+            };
 
-                // Direct fetch with FormData (no Content-Type — browser sets multipart boundary)
-                const API_URL = 'https://spotly-frontend.onrender.com/api';
-                const token = localStorage.getItem('token');
-                const response = await fetch(`${API_URL}/spots/${editingSpot._id}`, {
-                    method: 'PUT',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-                    body: formData,
-                });
-                const data = await response.json();
-                res = { success: response.ok, data: data.data, message: data.message };
-            } else {
-                // JSON update (no file)
-                const updateData = {
-                    name: editingSpot.name,
-                    description: editingSpot.description,
-                    category: editingSpot.category,
-                    featuredImage: editingSpot.featuredImage,
-                    images: editingSpot.images,
-                    priceRange: editingSpot.priceRange,
-                    rating: editingSpot.rating,
-                    tags: editingSpot.tags,
-                    features: editingSpot.features,
-                    location: editingSpot.location,
-                    contact: editingSpot.contact,
-                };
-                res = await api.put(`/spots/${editingSpot._id}`, updateData);
-            }
+            const res = await api.put(`/spots/${editingSpot._id}`, updateData);
 
             if (res.success) {
                 toast.success('Spot updated successfully!');
