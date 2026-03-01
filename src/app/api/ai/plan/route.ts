@@ -24,7 +24,7 @@ Guidelines:
 - Keep responses concise but informative (2-4 paragraphs max).
 - You can also answer general questions about Surat (weather, culture, transport).`;
 
-const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"];
+const MODELS_TO_TRY = ["gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash"];
 
 async function callGeminiREST(model: string, prompt: string): Promise<string> {
     const url = `${GEMINI_API_URL}/${model}:generateContent?key=${apiKey}`;
