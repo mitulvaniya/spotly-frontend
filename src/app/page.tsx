@@ -64,11 +64,14 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Abstract Background */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/10 blur-[120px] animate-pulse" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+        {/* Professional Abstract Background */}
+        <div className="absolute inset-0 z-0 bg-background overflow-hidden">
+          <div className="absolute top-0 w-full h-[100vh] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.15),rgba(0,0,0,0))]" />
+          <div className="absolute bottom-[-10%] right-[-5%] w-[50vw] h-[50vh] rounded-full bg-primary/10 blur-[120px] animate-pulse" />
+          <div className="absolute top-[20%] left-[-5%] w-[40vw] h-[40vh] rounded-full bg-secondary/10 blur-[100px] animate-[pulse_8s_ease-in-out_infinite]" />
+
+          {/* Pure CSS subtle grid instead of external image */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         </div>
 
         <div className="container relative z-10 px-6 text-center max-w-5xl mx-auto">
