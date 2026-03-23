@@ -5,12 +5,13 @@ import { Footer } from "@/components/layout/Footer";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { ArrowUpRight, TrendingUp, ArrowLeft, Search, X } from "lucide-react";
-import { CATEGORIES, SPOTS } from "@/lib/data";
-import { useState, useMemo } from "react";
+import { CATEGORIES } from "@/lib/data";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { Star, MapPin } from "lucide-react";
+import { Star, MapPin, Loader2 } from "lucide-react";
+import { api } from "@/lib/api";
 
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 
@@ -18,38 +19,67 @@ export default function CategoriesPage() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+    const [liveSpots, setLiveSpots] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch spots on mount
+    useEffect(() => {
+        const fetchSpots = async () => {
+            try {
+                const response = await api.get<any>('/spots?limit=100');
+                if (response.success && response.data?.spots) {
+                    setLiveSpots(response.data.spots);
+                }
+            } catch (error) {
+                console.error("Failed to fetch spots:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSpots();
+    }, []);
+
+    // Calculate real category counts and filter empty categories
+    const activeCategories = useMemo(() => {
+        return CATEGORIES.map(cat => {
+            const actualCount = liveSpots.filter(s => s.category === cat.name).length;
+            return { ...cat, actualCount };
+        }).filter(cat => cat.actualCount > 0 || !isLoading); // Show all until loaded, then show actual counts
+    }, [liveSpots, isLoading]);
 
     // Filter categories by search query
     const filteredCategories = useMemo(() => {
-        if (!searchQuery) return CATEGORIES;
-
-        const query = searchQuery.toLowerCase();
-        return CATEGORIES.filter(cat =>
-            cat.name.toLowerCase().includes(query) ||
-            cat.description.toLowerCase().includes(query) ||
-            cat.subCategories.some(sub => sub.toLowerCase().includes(query))
-        );
-    }, [searchQuery]);
+        let cats = activeCategories;
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            cats = cats.filter(cat =>
+                cat.name.toLowerCase().includes(query) ||
+                cat.description.toLowerCase().includes(query) ||
+                cat.subCategories.some(sub => sub.toLowerCase().includes(query))
+            );
+        }
+        return cats;
+    }, [searchQuery, activeCategories]);
 
     // Get spots for selected category and subcategory
     const filteredSpots = useMemo(() => {
         if (!selectedCategory) return [];
 
-        let spots = SPOTS.filter(spot => spot.category === selectedCategory);
+        let spots = liveSpots.filter(spot => spot.category === selectedCategory);
 
         // Filter by subcategory if selected
         if (selectedSubcategory) {
             spots = spots.filter(spot =>
-                spot.tags.some(tag => tag.toLowerCase() === selectedSubcategory.toLowerCase())
+                spot.tags?.some((tag: string) => tag.toLowerCase() === selectedSubcategory.toLowerCase())
             );
         }
 
         return spots;
-    }, [selectedCategory, selectedSubcategory]);
+    }, [selectedCategory, selectedSubcategory, liveSpots]);
 
-    // Get trending categories (top 3 by count)
-    const trendingCategories = [...CATEGORIES]
-        .sort((a, b) => b.count - a.count)
+    // Get trending categories (top 3 by actual count)
+    const trendingCategories = [...activeCategories]
+        .sort((a, b) => b.actualCount - a.actualCount)
         .slice(0, 3);
 
     // Get subcategories for selected category
@@ -162,7 +192,7 @@ export default function CategoriesPage() {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <cat.icon className="w-6 h-6 text-primary" />
                                                     <span className="text-xs font-bold bg-primary/20 text-primary px-2 py-1 rounded-full">
-                                                        {cat.count} spots
+                                                        {cat.actualCount} spots
                                                     </span>
                                                 </div>
                                                 <h3 className="text-2xl font-bold text-white mb-2">{cat.name}</h3>
@@ -201,7 +231,7 @@ export default function CategoriesPage() {
                                                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />
                                                 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/10">
-                                                    {cat.count} spots
+                                                    {cat.actualCount} spots
                                                 </div>
                                                 <ArrowUpRight className="absolute top-4 left-4 w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                                             </div>
@@ -287,29 +317,35 @@ export default function CategoriesPage() {
                             )}
                         </div>
 
-                        {/* Spots Grid */}
-                        {filteredSpots.length > 0 ? (
+                        {isLoading ? (
+                            <div className="flex justify-center py-20">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            </div>
+                        ) : filteredSpots.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {filteredSpots.map((spot, i) => (
-                                    <Link key={spot.id} href={`/spot/${spot.id}`}>
+                                    <Link key={spot._id} href={`/spot/${spot._id}`}>
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             transition={{ delay: i * 0.05 }}
                                         >
-                                            <Card spotId={spot.id.toString()} className="group cursor-pointer">
+                                            <Card spotId={spot._id} className="group cursor-pointer">
                                                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
-                                                    <Image
-                                                        src={spot.image}
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={spot.featuredImage || 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=800'}
                                                         alt={spot.name}
-                                                        fill
-                                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=800';
+                                                        }}
                                                     />
                                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold border border-white/10">
-                                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating}
+                                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating || "New"}
                                                     </div>
                                                     <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg text-xs font-bold border border-white/10">
-                                                        {spot.price}
+                                                        {spot.priceRange || "$$"}
                                                     </div>
                                                 </div>
                                                 <div className="p-6">
@@ -317,12 +353,12 @@ export default function CategoriesPage() {
                                                         <div>
                                                             <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{spot.name}</h3>
                                                             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                                                                <MapPin className="w-3 h-3" /> {spot.location} • {spot.distance}km
+                                                                <MapPin className="w-3 h-3" /> {spot.location?.city}
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2 mt-4">
-                                                        {spot.tags.map(tag => (
+                                                        {spot.tags?.map((tag: string) => (
                                                             <span key={tag} className="text-[10px] uppercase tracking-wider text-white/50 bg-white/5 px-2 py-1 rounded-sm">
                                                                 {tag}
                                                             </span>
