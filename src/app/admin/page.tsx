@@ -620,6 +620,91 @@ export default function AdminPage() {
                     </div>
                 )}
 
+                {/* ===== BUSINESS REQUESTS PANEL ===== */}
+                {panelView === 'requests' && (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <div>
+                                <h2 className="text-xl font-bold">Pending Business Requests</h2>
+                                <p className="text-sm text-muted-foreground">Review and approve or reject business account applications</p>
+                            </div>
+                            <button onClick={fetchBusinessRequests} className="text-xs text-primary hover:underline px-3 py-1 bg-primary/10 rounded-lg">
+                                Refresh
+                            </button>
+                        </div>
+
+                        {requestsLoading ? (
+                            <div className="flex justify-center py-20">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            </div>
+                        ) : businessRequests.length === 0 ? (
+                            <div className="text-center py-24 text-muted-foreground">
+                                <CheckCircle className="w-14 h-14 mx-auto mb-4 opacity-20" />
+                                <p className="font-semibold text-lg">All clear!</p>
+                                <p className="text-sm mt-1">No pending business requests right now.</p>
+                            </div>
+                        ) : (
+                            businessRequests.map(u => (
+                                <motion.div
+                                    key={u._id}
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-card border-2 border-yellow-500/20 rounded-2xl p-5 hover:border-yellow-500/40 transition-colors"
+                                >
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                        {/* Avatar */}
+                                        <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 overflow-hidden">
+                                            {u.avatar
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                                                : <span className="text-indigo-500 font-black text-xl">{u.name?.[0]?.toUpperCase() || '?'}</span>
+                                            }
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                <h3 className="font-bold text-base">{(u as any).businessRequest?.businessName || u.name}</h3>
+                                                <span className="text-[10px] font-bold bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-2 py-0.5 rounded-full">⏳ Pending</span>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground">{u.email}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Requested: {(u as any).businessRequest?.requestedAt
+                                                    ? new Date((u as any).businessRequest.requestedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                    : 'Unknown'}
+                                            </p>
+                                        </div>
+
+                                        {/* Approve / Reject Buttons */}
+                                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                                            <Button
+                                                className="flex-1 sm:flex-none gap-2 h-9 text-sm bg-green-600 hover:bg-green-700 text-white border-0"
+                                                disabled={reviewingRequest === u._id}
+                                                onClick={() => handleBusinessRequest(u._id, 'approve')}
+                                            >
+                                                {reviewingRequest === u._id
+                                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                                    : <CheckCircle className="w-4 h-4" />
+                                                }
+                                                Approve
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                className="flex-1 sm:flex-none gap-2 h-9 text-sm text-red-500 border-red-500/30 hover:bg-red-500/10"
+                                                disabled={reviewingRequest === u._id}
+                                                onClick={() => handleBusinessRequest(u._id, 'reject')}
+                                            >
+                                                <XCircle className="w-4 h-4" />
+                                                Reject
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+                )}
+
             </div>
 
             {/* Edit Modal */}
