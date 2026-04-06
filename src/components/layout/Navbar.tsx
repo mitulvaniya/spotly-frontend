@@ -36,8 +36,11 @@ export function Navbar() {
         { name: "Discover", href: "/discover" },
         { name: "Trending", href: "/trending" },
         { name: "Categories", href: "/categories" },
-        { name: "For Business", href: "/business" },
     ];
+
+    const businessHref = user?.role === 'business_owner' || user?.role === 'admin'
+        ? '/business'
+        : '/signup';
 
     return (
         <>
@@ -54,7 +57,7 @@ export function Navbar() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-8">
-                        {[{ name: "Discover", href: "/discover" }, { name: "Trending", href: "/trending" }, { name: "Categories", href: "/categories" }, { name: "For Business", href: "/business" }].map((item) => (
+                        {[{ name: "Discover", href: "/discover" }, { name: "Trending", href: "/trending" }, { name: "Categories", href: "/categories" }].map((item) => (
                             <Link
                                 key={item.name}
                                 href={item.href}
@@ -64,6 +67,13 @@ export function Navbar() {
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
                             </Link>
                         ))}
+                        <Link
+                            href={businessHref}
+                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
+                        >
+                            {user?.role === 'business_owner' || user?.role === 'admin' ? 'My Business' : 'For Business'}
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                        </Link>
                     </nav>
 
                     {/* Desktop Actions */}
@@ -123,13 +133,25 @@ export function Navbar() {
                                     </Button>
                                 </Tooltip>
                                 {showUserMenu && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-1 z-50">
+                                    <div className="absolute right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-xl py-2 z-50">
+                                        <div className="px-4 py-2 border-b border-border mb-1">
+                                            <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                        </div>
                                         <Link href="/profile" onClick={() => setShowUserMenu(false)}>
                                             <button className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2">
                                                 <User className="w-4 h-4" />
                                                 Profile
                                             </button>
                                         </Link>
+                                        {(user?.role === 'business_owner') && (
+                                            <Link href="/business" onClick={() => setShowUserMenu(false)}>
+                                                <button className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2 text-indigo-500">
+                                                    <Shield className="w-4 h-4" />
+                                                    Business Dashboard
+                                                </button>
+                                            </Link>
+                                        )}
                                         <button
                                             onClick={handleLogout}
                                             className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2 text-red-500"
@@ -201,6 +223,13 @@ export function Navbar() {
                                             {item.name}
                                         </Link>
                                     ))}
+                                    <Link
+                                        href={businessHref}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="block px-4 py-3 text-base font-medium text-foreground hover:bg-muted rounded-lg transition-colors"
+                                    >
+                                        {user?.role === 'business_owner' || user?.role === 'admin' ? 'My Business' : 'For Business'}
+                                    </Link>
                                     {user ? (
                                         <div className="pt-4 border-t border-border space-y-2">
                                             <div className="px-4 py-2 flex items-center gap-3 mb-2">

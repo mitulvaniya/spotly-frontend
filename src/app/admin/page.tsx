@@ -4,7 +4,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Edit3, Trash2, Plus, Loader2, Save, X, Search, Eye, Star, MapPin, Image as ImageIcon, Upload } from "lucide-react";
+import { Shield, Edit3, Trash2, Plus, Loader2, Save, X, Search, Eye, Star, MapPin, Image as ImageIcon, Upload, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { api, authApi } from "@/lib/api";
 import { toast } from "sonner";
@@ -57,6 +57,7 @@ export default function AdminPage() {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved'>('all');
 
     // Check admin auth
     useEffect(() => {
@@ -153,13 +154,45 @@ export default function AdminPage() {
         }
     };
 
+    const handleApprove = async (spotId: string) => {
+        try {
+            const res = await api.put(`/spots/${spotId}`, { status: 'approved' });
+            if (res.success) {
+                toast.success("Spot approved and published!");
+                setSpots(prev => prev.map(s => s._id === spotId ? { ...s, status: 'approved' } : s));
+            } else {
+                toast.error(res.message || "Failed to approve");
+            }
+        } catch (err) {
+            toast.error("Failed to approve spot");
+        }
+    };
+
+    const handleReject = async (spotId: string) => {
+        try {
+            const res = await api.put(`/spots/${spotId}`, { status: 'rejected' });
+            if (res.success) {
+                toast.success("Spot rejected.");
+                setSpots(prev => prev.map(s => s._id === spotId ? { ...s, status: 'rejected' } : s));
+            } else {
+                toast.error(res.message || "Failed to reject");
+            }
+        } catch (err) {
+            toast.error("Failed to reject spot");
+        }
+    };
+
     const filteredSpots = spots.filter(spot => {
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        return spot.name.toLowerCase().includes(q) ||
-            spot.category.toLowerCase().includes(q) ||
-            spot.location?.city?.toLowerCase().includes(q);
+        const matchesSearch = !searchQuery || (
+            spot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            spot.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            spot.location?.city?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        const matchesTab = activeTab === 'all' || spot.status === activeTab;
+        return matchesSearch && matchesTab;
     });
+
+    const pendingCount = spots.filter(s => s.status === 'pending').length;
 
     if (!isAdmin) {
         return (
@@ -204,14 +237,36 @@ export default function AdminPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     {[
                         { label: "Total Spots", value: spots.length, color: "text-blue-400" },
-                        { label: "Food & Cafes", value: spots.filter(s => s.category === "Food & Cafes").length, color: "text-orange-400" },
-                        { label: "Entertainment", value: spots.filter(s => s.category === "Entertainment").length, color: "text-purple-400" },
-                        { label: "Total Views", value: spots.reduce((sum, s) => sum + (s.views || 0), 0).toLocaleString(), color: "text-green-400" },
+                        { label: "Pending Review", value: pendingCount, color: pendingCount > 0 ? "text-yellow-400" : "text-muted-foreground" },
+                        { label: "Approved Live", value: spots.filter(s => s.status === "approved").length, color: "text-green-400" },
+                        { label: "Total Views", value: spots.reduce((sum, s) => sum + (s.views || 0), 0).toLocaleString(), color: "text-purple-400" },
                     ].map((stat, i) => (
                         <div key={i} className="bg-muted/30 border border-border rounded-2xl p-4">
                             <p className="text-sm text-muted-foreground">{stat.label}</p>
                             <p className={cn("text-2xl font-bold", stat.color)}>{stat.value}</p>
                         </div>
+                    ))}
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex items-center gap-2 mb-6 bg-muted/40 rounded-2xl p-1.5 w-fit">
+                    {(['all', 'pending', 'approved'] as const).map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
+                                activeTab === tab
+                                    ? 'bg-background text-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            {tab === 'pending' && <Clock className="w-3.5 h-3.5" />}
+                            {tab === 'approved' && <CheckCircle className="w-3.5 h-3.5" />}
+                            {tab}
+                            {tab === 'pending' && pendingCount > 0 && (
+                                <span className="bg-yellow-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
+                            )}
+                        </button>
                     ))}
                 </div>
 
@@ -253,8 +308,35 @@ export default function AdminPage() {
                                         </div>
                                     </div>
 
-                                    {/* Actions */}
+                                    {/* Status Badge + Actions */}
                                     <div className="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto pt-3 md:pt-0 mt-2 md:mt-0 border-t md:border-none border-border">
+                                        {/* Status badge */}
+                                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                                            spot.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                            spot.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                                            'bg-red-500/10 text-red-500 border-red-500/20'
+                                        }`}>{spot.status}</span>
+
+                                        {/* Approve/Reject for pending */}
+                                        {spot.status === 'pending' && (
+                                            <>
+                                                <Button
+                                                    variant="outline"
+                                                    className="gap-1.5 text-sm h-9 flex-1 md:flex-none justify-center text-green-500 border-green-500/30 hover:bg-green-500/10"
+                                                    onClick={() => handleApprove(spot._id)}
+                                                >
+                                                    <CheckCircle className="w-4 h-4" /> Approve
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    className="gap-1.5 text-sm h-9 flex-1 md:flex-none justify-center text-red-500 hover:bg-red-500/10"
+                                                    onClick={() => handleReject(spot._id)}
+                                                >
+                                                    <XCircle className="w-4 h-4" /> Reject
+                                                </Button>
+                                            </>
+                                        )}
+
                                         <Button
                                             variant="outline"
                                             className="gap-2 text-sm h-9 flex-1 md:flex-none justify-center"

@@ -190,11 +190,18 @@ export default function BusinessDashboardPage() {
         setImagePreview("");
     };
 
+    const approvedSpots = spots.filter(s => s.status === 'approved');
+    const pendingSpots = spots.filter(s => s.status === 'pending');
+    const totalViews = spots.reduce((s, sp) => s + (sp.views || 0), 0);
+    const avgRating = approvedSpots.length > 0
+        ? (approvedSpots.reduce((s, sp) => s + (sp.rating || 0), 0) / approvedSpots.length).toFixed(1)
+        : 'N/A';
+
     const stats = [
-        { label: "Total Views", value: spots.reduce((s, sp) => s + (sp.views || 0), 0).toLocaleString(), icon: Users, change: "+12%", color: "text-blue-500" },
-        { label: "Active Spots", value: spots.filter(s => s.status === "approved").length.toString(), icon: BarChart3, change: "+5%", color: "text-purple-500" },
-        { label: "Total Spots", value: spots.length.toString(), icon: Store, change: "+18%", color: "text-green-500" },
-        { label: "Avg Rating", value: spots.length > 0 ? (spots.reduce((s, sp) => s + (sp.rating || 0), 0) / spots.length).toFixed(1) : "N/A", icon: DollarSign, change: "+8%", color: "text-orange-500" },
+        { label: "Total Views", value: totalViews.toLocaleString(), icon: Users, badge: null, color: "text-blue-500" },
+        { label: "Active Spots", value: approvedSpots.length.toString(), icon: BarChart3, badge: approvedSpots.length > 0 ? 'live' : null, color: "text-green-500" },
+        { label: "Pending Review", value: pendingSpots.length.toString(), icon: Store, badge: pendingSpots.length > 0 ? 'action' : null, color: pendingSpots.length > 0 ? "text-yellow-500" : "text-muted-foreground" },
+        { label: "Avg Rating", value: avgRating, icon: DollarSign, badge: null, color: "text-orange-500" },
     ];
 
     if (isLoading) {
@@ -223,22 +230,31 @@ export default function BusinessDashboardPage() {
                 </motion.div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
                     {stats.map((stat, i) => (
                         <motion.div
                             key={stat.label}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
-                            className="glass-card p-6 rounded-3xl"
+                            className="glass-card p-5 rounded-3xl"
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <div className={`p-3 rounded-xl bg-background border border-border ${stat.color}`}>
-                                    <stat.icon className="w-6 h-6" />
+                                    <stat.icon className="w-5 h-5" />
                                 </div>
-                                <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-full">{stat.change}</span>
+                                {stat.badge === 'live' && (
+                                    <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-full flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />Live
+                                    </span>
+                                )}
+                                {stat.badge === 'action' && (
+                                    <span className="text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-full">
+                                        Awaiting
+                                    </span>
+                                )}
                             </div>
-                            <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
+                            <h3 className="text-2xl md:text-3xl font-bold mb-1">{stat.value}</h3>
                             <p className="text-sm text-muted-foreground">{stat.label}</p>
                         </motion.div>
                     ))}
