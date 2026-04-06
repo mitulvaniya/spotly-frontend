@@ -38,231 +38,228 @@ export function Navbar() {
     ];
 
     return (
-        <motion.header
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
-        >
-            <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-                <Link href="/" className="group flex items-center gap-1 text-foreground">
-                    <Logo />
-                </Link>
-
-                {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center gap-8">
-                    {[{ name: "Discover", href: "/discover" }, { name: "Trending", href: "/trending" }, { name: "Categories", href: "/categories" }, { name: "For Business", href: "/business" }].map((item) => (
-                        <Link
-                            key={item.name}
-                            href={item.href}
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
-                        >
-                            {item.name}
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-                        </Link>
-                    ))}
-                </nav>
-
-                {/* Desktop Actions */}
-                <div className="hidden md:flex items-center gap-4">
-                    <Tooltip text="Toggle Theme">
-                        <ThemeToggle />
-                    </Tooltip>
-
-                    <Link href="/ai">
-                        <Tooltip text="Ask AI Host">
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                as="div"
-                                className="gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-300 hover:from-indigo-500/20 hover:to-purple-500/20 cursor-pointer"
-                            >
-                                <Sparkles className="w-4 h-4" /> Ask AI
-                            </Button>
-                        </Tooltip>
+        <>
+            <motion.header
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
+            >
+                <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+                    <Link href="/" className="group flex items-center gap-1 text-foreground">
+                        <Logo />
                     </Link>
 
-                    {user?.role === 'admin' && (
-                        <Link href="/admin">
-                            <Tooltip text="Admin Panel">
+                    {/* Desktop Navigation */}
+                    <nav className="hidden md:flex items-center gap-8">
+                        {[{ name: "Discover", href: "/discover" }, { name: "Trending", href: "/trending" }, { name: "Categories", href: "/categories" }, { name: "For Business", href: "/business" }].map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
+                            >
+                                {item.name}
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                            </Link>
+                        ))}
+                    </nav>
+
+                    {/* Desktop Actions */}
+                    <div className="hidden md:flex items-center gap-4">
+                        <Tooltip text="Toggle Theme">
+                            <ThemeToggle />
+                        </Tooltip>
+
+                        <Link href="/ai">
+                            <Tooltip text="Ask AI Host">
                                 <Button
                                     variant="secondary"
                                     size="sm"
                                     as="div"
-                                    className="gap-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 text-red-500 dark:text-red-300 hover:from-red-500/20 hover:to-orange-500/20 cursor-pointer"
+                                    className="gap-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-300 hover:from-indigo-500/20 hover:to-purple-500/20 cursor-pointer"
                                 >
-                                    <Shield className="w-4 h-4" /> Admin
+                                    <Sparkles className="w-4 h-4" /> Ask AI
                                 </Button>
                             </Tooltip>
                         </Link>
-                    )}
 
-                    <Link href="/saved">
-                        <Tooltip text="Your Collection">
-                            <Button variant="ghost" size="sm" as="div" className="relative group text-muted-foreground hover:text-pink-500 px-0 w-9 h-9">
-                                <Heart className="w-5 h-5" />
-                                <SavedBadge />
-                            </Button>
-                        </Tooltip>
-                    </Link>
+                        {user?.role === 'admin' && (
+                            <Link href="/admin">
+                                <Tooltip text="Admin Panel">
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        as="div"
+                                        className="gap-2 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 text-red-500 dark:text-red-300 hover:from-red-500/20 hover:to-orange-500/20 cursor-pointer"
+                                    >
+                                        <Shield className="w-4 h-4" /> Admin
+                                    </Button>
+                                </Tooltip>
+                            </Link>
+                        )}
 
-                    {user ? (
-                        <div className="relative">
-                            <Tooltip text={user.name || user.email}>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setShowUserMenu(!showUserMenu)}
-                                    className="gap-2"
-                                >
-                                    <User className="w-4 h-4" />
-                                    <span className="hidden lg:inline">{user.name || 'Profile'}</span>
+                        <Link href="/saved">
+                            <Tooltip text="Your Collection">
+                                <Button variant="ghost" size="sm" as="div" className="relative group text-muted-foreground hover:text-pink-500 px-0 w-9 h-9">
+                                    <Heart className="w-5 h-5" />
+                                    <SavedBadge />
                                 </Button>
                             </Tooltip>
-                            {showUserMenu && (
-                                <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-1 z-50">
-                                    <Link href="/profile" onClick={() => setShowUserMenu(false)}>
-                                        <button className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2">
-                                            <User className="w-4 h-4" />
-                                            Profile
-                                        </button>
-                                    </Link>
-                                    <button
-                                        onClick={handleLogout}
-                                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2 text-red-500"
-                                    >
-                                        <LogOut className="w-4 h-4" />
-                                        Logout
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <Link href="/signin">
-                            <Button variant="primary" size="sm">
-                                Sign In
-                            </Button>
                         </Link>
-                    )}
-                </div>
 
-                {/* Mobile Actions */}
-                <div className="flex md:hidden items-center gap-3">
-                    <ThemeToggle />
-                    <Link href="/saved">
-                        <Button variant="ghost" size="sm" as="div" className="relative text-muted-foreground hover:text-pink-500 px-0 w-9 h-9">
-                            <Heart className="w-5 h-5" />
-                            <SavedBadge />
-                        </Button>
-                    </Link>
-                    <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
-                        aria-label="Toggle menu"
-                    >
-                        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
-                </div>
-            </div>
-
-
-            {/* Mobile Menu */}
-            <AnimatePresence>
-                {mobileMenuOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
-                            style={{ top: '80px' }}
-                        />
-
-                        {/* Menu */}
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="absolute top-full left-0 right-0 bg-card border-b border-border shadow-xl md:hidden"
-                        >
-                            <nav className="container mx-auto px-6 py-6 space-y-1">
-                                {navItems.map((item) => (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="block px-4 py-3 text-base font-medium text-foreground hover:bg-muted rounded-lg transition-colors"
+                        {user ? (
+                            <div className="relative">
+                                <Tooltip text={user.name || user.email}>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowUserMenu(!showUserMenu)}
+                                        className="gap-2"
                                     >
-                                        {item.name}
-                                    </Link>
-                                ))}
-                                {user ? (
-                                    <div className="pt-4 border-t border-border space-y-2">
-                                        <div className="px-4 py-2 flex items-center gap-3 mb-2">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                                {user.avatar ? (
-                                                    <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-                                                ) : (
-                                                    <User className="w-5 h-5" />
-                                                )}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium">{user.name}</p>
-                                                <p className="text-xs text-muted-foreground">{user.email}</p>
-                                            </div>
-                                        </div>
-                                        <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
-                                            <Button variant="outline" className="w-full justify-start gap-2">
+                                        <User className="w-4 h-4" />
+                                        <span className="hidden lg:inline">{user.name || 'Profile'}</span>
+                                    </Button>
+                                </Tooltip>
+                                {showUserMenu && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg py-1 z-50">
+                                        <Link href="/profile" onClick={() => setShowUserMenu(false)}>
+                                            <button className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2">
                                                 <User className="w-4 h-4" />
                                                 Profile
-                                            </Button>
+                                            </button>
                                         </Link>
-                                        <Button
-                                            variant="ghost"
-                                            className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                                            onClick={() => {
-                                                handleLogout();
-                                                setMobileMenuOpen(false);
-                                            }}
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center gap-2 text-red-500"
                                         >
                                             <LogOut className="w-4 h-4" />
                                             Logout
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="pt-4 border-t border-border">
-                                        <Link href="/signin" onClick={() => setMobileMenuOpen(false)}>
-                                            <Button variant="primary" className="w-full">
-                                                Sign In
-                                            </Button>
-                                        </Link>
+                                        </button>
                                     </div>
                                 )}
-                            </nav>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                            </div>
+                        ) : (
+                            <Link href="/signin">
+                                <Button variant="primary" size="sm">
+                                    Sign In
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
+
+                    {/* Mobile Actions */}
+                    <div className="flex md:hidden items-center gap-3">
+                        <ThemeToggle />
+                        <Link href="/saved">
+                            <Button variant="ghost" size="sm" as="div" className="relative text-muted-foreground hover:text-pink-500 px-0 w-9 h-9">
+                                <Heart className="w-5 h-5" />
+                                <SavedBadge />
+                            </Button>
+                        </Link>
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+                            aria-label="Toggle menu"
+                        >
+                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
+                </div>
+
+
+                {/* Mobile Menu */}
+                <AnimatePresence>
+                    {mobileMenuOpen && (
+                        <>
+                            {/* Backdrop */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+                                style={{ top: '80px' }}
+                            />
+
+                            {/* Menu */}
+                            <motion.div
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="absolute top-full left-0 right-0 bg-card border-b border-border shadow-xl md:hidden"
+                            >
+                                <nav className="container mx-auto px-6 py-6 space-y-1">
+                                    {navItems.map((item) => (
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="block px-4 py-3 text-base font-medium text-foreground hover:bg-muted rounded-lg transition-colors"
+                                        >
+                                            {item.name}
+                                        </Link>
+                                    ))}
+                                    {user ? (
+                                        <div className="pt-4 border-t border-border space-y-2">
+                                            <div className="px-4 py-2 flex items-center gap-3 mb-2">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                                    {user.avatar ? (
+                                                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                                                    ) : (
+                                                        <User className="w-5 h-5" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">{user.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                                                </div>
+                                            </div>
+                                            <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                                                <Button variant="outline" className="w-full justify-start gap-2">
+                                                    <User className="w-4 h-4" />
+                                                    Profile
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                                onClick={() => {
+                                                    handleLogout();
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                Logout
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="pt-4 border-t border-border">
+                                            <Link href="/signin" onClick={() => setMobileMenuOpen(false)}>
+                                                <Button variant="primary" className="w-full">
+                                                    Sign In
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    )}
+                                </nav>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+            </motion.header >
 
             {/* Mobile AI Floating Action Button (Always Visible) */}
-            <div className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-[100]">
+            <div className="md:hidden fixed bottom-6 right-6 z-[100]">
                 <Link href="/ai">
                     <Button 
-                        className="h-12 px-6 rounded-full bg-background/80 backdrop-blur-xl border border-indigo-500/30 shadow-[0_8px_32px_rgba(99,102,241,0.25)] text-foreground hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                        className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(99,102,241,0.5)] text-white hover:scale-110 active:scale-95 transition-transform flex items-center justify-center p-0"
                         aria-label="Ask AI Host"
                     >
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center -ml-2">
-                            <Sparkles className="w-4 h-4 text-white animate-pulse" />
-                        </div>
-                        <span className="font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent truncate">
-                            Ask AI
-                        </span>
+                        <Sparkles className="w-6 h-6 animate-pulse" />
                     </Button>
                 </Link>
             </div>
-        </motion.header >
+        </>
     );
 }
 
