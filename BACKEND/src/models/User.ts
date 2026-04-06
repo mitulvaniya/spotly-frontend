@@ -14,6 +14,12 @@ export interface IUser extends Document {
     bio?: string;
     isVerified: boolean;
     isActive: boolean;
+    businessRequest?: {
+        status: 'pending' | 'approved' | 'rejected';
+        businessName: string;
+        requestedAt: Date;
+        reviewedAt?: Date;
+    };
     createdAt: Date;
     updatedAt: Date;
     comparePassword(candidatePassword: string): Promise<boolean>;
@@ -81,6 +87,15 @@ const UserSchema = new Schema<IUser>(
         isActive: {
             type: Boolean,
             default: true,
+        },
+        businessRequest: {
+            status: {
+                type: String,
+                enum: ['pending', 'approved', 'rejected'],
+            },
+            businessName: { type: String },
+            requestedAt: { type: Date },
+            reviewedAt: { type: Date },
         },
     },
     {

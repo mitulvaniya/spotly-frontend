@@ -7,6 +7,8 @@ import {
     toggleSaveSpot,
     getAllUsers,
     updateUserRole,
+    getBusinessRequests,
+    reviewBusinessRequest,
 } from '../controllers/user.controller';
 import { authenticate, authorize } from '../middleware/auth';
 import { validate, updateProfileSchema } from '../middleware/validation';
@@ -23,5 +25,7 @@ router.post('/saved/:spotId', authenticate, toggleSaveSpot);
 // Admin-only user management
 router.get('/', authenticate, authorize('admin'), getAllUsers);
 router.put('/:id/role', authenticate, authorize('admin'), updateUserRole);
+router.get('/business-requests', authenticate, authorize('admin'), getBusinessRequests);
+router.put('/:id/business-request', authenticate, authorize('admin'), reviewBusinessRequest);
 
 export default router;

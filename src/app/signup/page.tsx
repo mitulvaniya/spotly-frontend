@@ -92,10 +92,12 @@ export default function SignUpPage() {
 
             if (response.success) {
                 if (accountType === 'business_owner') {
-                    toast.success("Business account created! 🎉", {
-                        description: "Welcome to SPOTLY Business. Redirecting to your dashboard...",
+                    // Business request submitted - not approved yet
+                    toast.success("Business request submitted! 🎉", {
+                        description: "An admin will review and approve your account. You'll be notified soon.",
+                        duration: 6000,
                     });
-                    window.location.href = '/business';
+                    window.location.href = '/business-pending';
                 } else {
                     toast.success("Account created! Welcome to SPOTLY!", {
                         description: "Start discovering amazing spots in your city.",

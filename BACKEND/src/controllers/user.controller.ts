@@ -189,3 +189,61 @@ export const updateUserRole = asyncHandler(async (req: Request, res: Response): 
         data: { user },
     });
 });
+
+// @desc    Get all pending business requests (admin only)
+// @route   GET /api/users/business-requests
+// @access  Private (Admin)
+export const getBusinessRequests = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { status = 'pending' } = req.query;
+
+    const users = await User.find({
+        'businessRequest.status': status,
+    }).select('-password').sort({ 'businessRequest.requestedAt': -1 });
+
+    res.status(200).json({
+        success: true,
+        data: { users, count: users.length },
+    });
+});
+
+// @desc    Approve or reject a business request (admin only)
+// @route   PUT /api/users/:id/business-request
+// @access  Private (Admin)
+export const reviewBusinessRequest = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { action } = req.body; // 'approve' | 'reject'
+
+    if (!['approve', 'reject'].includes(action)) {
+        throw new AppError('Action must be approve or reject', 400);
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        throw new AppError('User not found', 404);
+    }
+
+    if (!user.businessRequest || user.businessRequest.status !== 'pending') {
+        throw new AppError('No pending business request found for this user', 400);
+    }
+
+    if (action === 'approve') {
+        user.role = 'business_owner';
+        user.businessRequest.status = 'approved';
+    } else {
+        user.businessRequest.status = 'rejected';
+    }
+
+    (user.businessRequest as any).reviewedAt = new Date();
+    await user.save();
+
+    const userResponse: any = user.toObject();
+    delete userResponse.password;
+
+    res.status(200).json({
+        success: true,
+        message: action === 'approve'
+            ? 'Business account approved! User now has business_owner access.'
+            : 'Business request rejected.',
+        data: { user: userResponse },
+    });
+});

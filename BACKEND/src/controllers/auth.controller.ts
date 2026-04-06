@@ -16,9 +16,8 @@ export const register = asyncHandler(async (req: Request, res: Response): Promis
         throw new AppError('User with this email already exists', 400);
     }
 
-    // Only allow user or business_owner to self-register. Admin is never self-assigned.
-    const allowedRoles = ['user', 'business_owner'];
-    const assignedRole = allowedRoles.includes(role) ? role : 'user';
+    // Explorer signup: instant access. Business signup: pending request, stays as 'user' until approved.
+    const isBusiness = role === 'business_owner';
 
     // Create user
     const user = await User.create({
@@ -26,7 +25,14 @@ export const register = asyncHandler(async (req: Request, res: Response): Promis
         email,
         password,
         phone,
-        role: assignedRole,
+        role: 'user', // Always start as regular user
+        ...(isBusiness && {
+            businessRequest: {
+                status: 'pending',
+                businessName: name,
+                requestedAt: new Date(),
+            },
+        }),
     });
 
     // Generate tokens
@@ -48,11 +54,14 @@ export const register = asyncHandler(async (req: Request, res: Response): Promis
 
     res.status(201).json({
         success: true,
-        message: 'User registered successfully',
+        message: isBusiness
+            ? 'Business registration request submitted! An admin will review and approve your account.'
+            : 'User registered successfully',
         data: {
             user: userResponse,
             accessToken,
             refreshToken,
+            pendingBusinessRequest: isBusiness,
         },
     });
 });

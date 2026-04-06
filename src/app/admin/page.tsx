@@ -70,7 +70,7 @@ export default function AdminPage() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved'>('all');
-    const [panelView, setPanelView] = useState<'spots' | 'users'>('spots');
+    const [panelView, setPanelView] = useState<'spots' | 'users' | 'requests'>('spots');
 
     // Users state
     const [appUsers, setAppUsers] = useState<AppUser[]>([]);
@@ -78,6 +78,11 @@ export default function AdminPage() {
     const [userSearch, setUserSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState<string>('all');
     const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+
+    // Business requests state
+    const [businessRequests, setBusinessRequests] = useState<AppUser[]>([]);
+    const [requestsLoading, setRequestsLoading] = useState(false);
+    const [reviewingRequest, setReviewingRequest] = useState<string | null>(null);
 
     // Check admin auth
     useEffect(() => {
@@ -251,6 +256,39 @@ export default function AdminPage() {
         return matchSearch && matchRole;
     });
 
+    const fetchBusinessRequests = async () => {
+        setRequestsLoading(true);
+        try {
+            const res = await api.get<{ users: AppUser[] }>('/users/business-requests?status=pending');
+            if (res.success && res.data?.users) {
+                setBusinessRequests(res.data.users);
+            }
+        } catch (err) {
+            toast.error("Failed to load business requests");
+        } finally {
+            setRequestsLoading(false);
+        }
+    };
+
+    const handleBusinessRequest = async (userId: string, action: 'approve' | 'reject') => {
+        setReviewingRequest(userId);
+        try {
+            const res = await api.put(`/users/${userId}/business-request`, { action });
+            if (res.success) {
+                toast.success(action === 'approve' ? '✅ Business account approved!' : '❌ Request rejected.');
+                setBusinessRequests(prev => prev.filter(u => u._id !== userId));
+            } else {
+                toast.error(res.message || 'Action failed');
+            }
+        } catch (err) {
+            toast.error('Action failed');
+        } finally {
+            setReviewingRequest(null);
+        }
+    };
+
+    const pendingRequestsCount = businessRequests.length;
+
     if (!isAdmin) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -278,18 +316,27 @@ export default function AdminPage() {
 
                     <div className="flex items-center gap-3 w-full md:w-auto">
                         {/* Panel toggle */}
-                        <div className="flex bg-muted/50 rounded-xl p-1 border border-border">
+                        <div className="flex bg-muted/50 rounded-xl p-1 border border-border overflow-x-auto">
                             <button
                                 onClick={() => { setPanelView('spots'); }}
-                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all', panelView === 'spots' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap', panelView === 'spots' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
                             >
                                 <Store className="w-4 h-4" /> Spots
                             </button>
                             <button
                                 onClick={() => { setPanelView('users'); if (appUsers.length === 0) fetchUsers(); }}
-                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all', panelView === 'users' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap', panelView === 'users' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
                             >
                                 <Users className="w-4 h-4" /> Users
+                            </button>
+                            <button
+                                onClick={() => { setPanelView('requests'); if (businessRequests.length === 0) fetchBusinessRequests(); }}
+                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap relative', panelView === 'requests' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                            >
+                                <Clock className="w-4 h-4" /> Requests
+                                {pendingRequestsCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 text-white text-[9px] font-black flex items-center justify-center rounded-full">{pendingRequestsCount}</span>
+                                )}
                             </button>
                         </div>
 
@@ -299,12 +346,12 @@ export default function AdminPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input type="text" placeholder="Search spots..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-muted border border-border rounded-xl h-10 pl-10 pr-4 text-sm focus:outline-none focus:border-primary" />
                             </div>
-                        ) : (
+                        ) : panelView === 'users' ? (
                             <div className="relative flex-1 md:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input type="text" placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="w-full bg-muted border border-border rounded-xl h-10 pl-10 pr-4 text-sm focus:outline-none focus:border-primary" />
                             </div>
-                        )}
+                        ) : null}
                     </div>
                 </div>
 
