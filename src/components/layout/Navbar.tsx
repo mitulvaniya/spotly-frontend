@@ -38,9 +38,7 @@ export function Navbar() {
         { name: "Categories", href: "/categories" },
     ];
 
-    const businessHref = user?.role === 'business_owner' || user?.role === 'admin'
-        ? '/business'
-        : '/signup';
+    const businessHref = '/business';
 
     return (
         <>
@@ -67,13 +65,15 @@ export function Navbar() {
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
                             </Link>
                         ))}
-                        <Link
-                            href={businessHref}
-                            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
-                        >
-                            {user?.role === 'business_owner' || user?.role === 'admin' ? 'My Business' : 'For Business'}
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
-                        </Link>
+                        {(user?.role === 'business_owner' || user?.role === 'admin') && (
+                            <Link
+                                href={businessHref}
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
+                            >
+                                My Business
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                            </Link>
+                        )}
                     </nav>
 
                     {/* Desktop Actions */}
@@ -223,13 +223,15 @@ export function Navbar() {
                                             {item.name}
                                         </Link>
                                     ))}
-                                    <Link
-                                        href={businessHref}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="block px-4 py-3 text-base font-medium text-foreground hover:bg-muted rounded-lg transition-colors"
-                                    >
-                                        {user?.role === 'business_owner' || user?.role === 'admin' ? 'My Business' : 'For Business'}
-                                    </Link>
+                                    {(user?.role === 'business_owner' || user?.role === 'admin') && (
+                                        <Link
+                                            href="/business"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="block px-4 py-3 text-base font-medium text-foreground hover:bg-muted rounded-lg transition-colors"
+                                        >
+                                            My Business
+                                        </Link>
+                                    )}
                                     {user ? (
                                         <div className="pt-4 border-t border-border space-y-2">
                                             <div className="px-4 py-2 flex items-center gap-3 mb-2">
