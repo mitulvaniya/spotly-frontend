@@ -4,12 +4,24 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Edit3, Trash2, Plus, Loader2, Save, X, Search, Eye, Star, MapPin, Image as ImageIcon, Upload, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Shield, Edit3, Trash2, Plus, Loader2, Save, X, Search, Eye, Star, MapPin, Image as ImageIcon, Upload, CheckCircle, XCircle, Clock, Users, Store, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { api, authApi } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+
+interface AppUser {
+    _id: string;
+    name: string;
+    email: string;
+    role: 'user' | 'business_owner' | 'admin';
+    avatar?: string;
+    provider?: string;
+    isActive: boolean;
+    createdAt: string;
+    phone?: string;
+}
 
 interface Spot {
     _id: string;
@@ -58,13 +70,21 @@ export default function AdminPage() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved'>('all');
+    const [panelView, setPanelView] = useState<'spots' | 'users'>('spots');
+
+    // Users state
+    const [appUsers, setAppUsers] = useState<AppUser[]>([]);
+    const [usersLoading, setUsersLoading] = useState(false);
+    const [userSearch, setUserSearch] = useState("");
+    const [roleFilter, setRoleFilter] = useState<string>('all');
+    const [updatingRole, setUpdatingRole] = useState<string | null>(null);
 
     // Check admin auth
     useEffect(() => {
-        const user = authApi.getCurrentUser();
-        if (!user || user.role !== "admin") {
+        const currentUser = authApi.getCurrentUser();
+        if (!currentUser || currentUser.role !== 'admin') {
             toast.error("Admin access required");
-            router.push("/signin");
+            router.push('/');
             return;
         }
         setIsAdmin(true);
@@ -194,6 +214,43 @@ export default function AdminPage() {
 
     const pendingCount = spots.filter(s => s.status === 'pending').length;
 
+    const fetchUsers = async () => {
+        setUsersLoading(true);
+        try {
+            const res = await api.get<{ users: AppUser[] }>('/users?limit=100');
+            if (res.success && res.data?.users) {
+                setAppUsers(res.data.users);
+            }
+        } catch (err) {
+            toast.error("Failed to load users");
+        } finally {
+            setUsersLoading(false);
+        }
+    };
+
+    const handleRoleChange = async (userId: string, newRole: string) => {
+        setUpdatingRole(userId);
+        try {
+            const res = await api.put(`/users/${userId}/role`, { role: newRole });
+            if (res.success) {
+                toast.success(`Role updated to ${newRole}`);
+                setAppUsers(prev => prev.map(u => u._id === userId ? { ...u, role: newRole as AppUser['role'] } : u));
+            } else {
+                toast.error(res.message || 'Failed to update role');
+            }
+        } catch (err) {
+            toast.error('Failed to update role');
+        } finally {
+            setUpdatingRole(null);
+        }
+    };
+
+    const filteredUsers = appUsers.filter(u => {
+        const matchSearch = !userSearch || u.name.toLowerCase().includes(userSearch.toLowerCase()) || u.email.toLowerCase().includes(userSearch.toLowerCase());
+        const matchRole = roleFilter === 'all' || u.role === roleFilter;
+        return matchSearch && matchRole;
+    });
+
     if (!isAdmin) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -214,22 +271,40 @@ export default function AdminPage() {
                             <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
                                 <Shield className="w-5 h-5 text-red-500" />
                             </div>
-                            <h1 className="text-4xl font-black">Admin Panel</h1>
+                            <h1 className="text-3xl md:text-4xl font-black">Admin Panel</h1>
                         </div>
-                        <p className="text-muted-foreground">Manage all {spots.length} spots on SPOTLY</p>
+                        <p className="text-muted-foreground">Manage {spots.length} spots and {appUsers.length || '...'} users</p>
                     </div>
 
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="relative flex-1 md:w-72">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Search spots..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-muted border border-border rounded-xl h-10 pl-10 pr-4 text-sm focus:outline-none focus:border-primary"
-                            />
+                        {/* Panel toggle */}
+                        <div className="flex bg-muted/50 rounded-xl p-1 border border-border">
+                            <button
+                                onClick={() => { setPanelView('spots'); }}
+                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all', panelView === 'spots' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                            >
+                                <Store className="w-4 h-4" /> Spots
+                            </button>
+                            <button
+                                onClick={() => { setPanelView('users'); if (appUsers.length === 0) fetchUsers(); }}
+                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all', panelView === 'users' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+                            >
+                                <Users className="w-4 h-4" /> Users
+                            </button>
                         </div>
+
+                        {/* Contextual search */}
+                        {panelView === 'spots' ? (
+                            <div className="relative flex-1 md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <input type="text" placeholder="Search spots..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-muted border border-border rounded-xl h-10 pl-10 pr-4 text-sm focus:outline-none focus:border-primary" />
+                            </div>
+                        ) : (
+                            <div className="relative flex-1 md:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <input type="text" placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="w-full bg-muted border border-border rounded-xl h-10 pl-10 pr-4 text-sm focus:outline-none focus:border-primary" />
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -248,18 +323,19 @@ export default function AdminPage() {
                     ))}
                 </div>
 
-                {/* Filter Tabs */}
-                <div className="flex items-center gap-2 mb-6 bg-muted/40 rounded-2xl p-1.5 w-fit">
-                    {(['all', 'pending', 'approved'] as const).map(tab => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
-                                activeTab === tab
-                                    ? 'bg-background text-foreground shadow-sm'
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
+                {/* Filter Tabs (Spots only) */}
+                {panelView === 'spots' && (
+                    <div className="flex items-center gap-2 mb-6 bg-muted/40 rounded-2xl p-1.5 w-fit overflow-x-auto">
+                        {(['all', 'pending', 'approved'] as const).map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize whitespace-nowrap ${
+                                    activeTab === tab
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
                             {tab === 'pending' && <Clock className="w-3.5 h-3.5" />}
                             {tab === 'approved' && <CheckCircle className="w-3.5 h-3.5" />}
                             {tab}
@@ -267,9 +343,13 @@ export default function AdminPage() {
                                 <span className="bg-yellow-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
                             )}
                         </button>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
+                {/* ===== SPOTS VIEW ===== */}
+                {panelView === 'spots' && (
+                <>
                 {/* Spots Table */}
                 {isLoading ? (
                     <div className="flex justify-center py-20">
@@ -383,6 +463,112 @@ export default function AdminPage() {
                         )}
                     </div>
                 )}
+                </>
+                )}
+
+                {/* ===== USERS VIEW ===== */}
+                {panelView === 'users' && (
+                    <div className="space-y-4">
+
+                        {/* Role Filter */}
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                            {['all', 'user', 'business_owner', 'admin'].map(r => (
+                                <button
+                                    key={r}
+                                    onClick={() => setRoleFilter(r)}
+                                    className={cn(
+                                        'px-4 py-1.5 rounded-xl text-sm font-medium transition-all capitalize',
+                                        roleFilter === r
+                                            ? 'bg-primary text-white'
+                                            : 'bg-muted/40 text-muted-foreground hover:text-foreground'
+                                    )}
+                                >
+                                    {r === 'business_owner' ? 'Business' : r}
+                                    {r !== 'all' && (
+                                        <span className="ml-1.5 text-xs opacity-70">
+                                            ({appUsers.filter(u => u.role === r).length})
+                                        </span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        {usersLoading ? (
+                            <div className="flex justify-center py-20">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            </div>
+                        ) : filteredUsers.length === 0 ? (
+                            <div className="text-center py-20 text-muted-foreground">
+                                <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                                <p className="font-semibold">No users found</p>
+                            </div>
+                        ) : (
+                            filteredUsers.map(u => (
+                                <motion.div
+                                    key={u._id}
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-card border border-border rounded-2xl p-4 hover:border-primary/30 transition-colors"
+                                >
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                        {/* Avatar */}
+                                        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                                            {u.avatar
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                ? <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                                                : <span className="text-primary font-bold text-lg">{u.name?.[0]?.toUpperCase() || '?'}</span>
+                                            }
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <h3 className="font-bold truncate">{u.name}</h3>
+                                                {u.provider === 'google' && (
+                                                    <span className="text-[10px] font-bold bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded-full">Google</span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-muted-foreground truncate">{u.email}</p>
+                                            <p className="text-xs text-muted-foreground mt-0.5">
+                                                Joined {new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </p>
+                                        </div>
+
+                                        {/* Role Changer */}
+                                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                                            <span className={cn(
+                                                'text-xs font-bold px-2.5 py-1 rounded-full border',
+                                                u.role === 'admin' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                u.role === 'business_owner' ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' :
+                                                'bg-muted text-muted-foreground border-border'
+                                            )}>
+                                                {u.role === 'business_owner' ? 'Business' : u.role}
+                                            </span>
+
+                                            <div className="relative flex-1 sm:flex-none">
+                                                <select
+                                                    value={u.role}
+                                                    onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                                                    disabled={updatingRole === u._id}
+                                                    className="w-full sm:w-40 bg-muted border border-border rounded-xl h-9 px-3 pr-8 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer disabled:opacity-50"
+                                                >
+                                                    <option value="user">Explorer (User)</option>
+                                                    <option value="business_owner">Business Owner</option>
+                                                    <option value="admin">Admin</option>
+                                                </select>
+                                                {updatingRole === u._id
+                                                    ? <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                                                    : <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+                )}
+
             </div>
 
             {/* Edit Modal */}

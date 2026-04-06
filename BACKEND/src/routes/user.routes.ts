@@ -5,8 +5,10 @@ import {
     uploadAvatar,
     getSavedSpots,
     toggleSaveSpot,
+    getAllUsers,
+    updateUserRole,
 } from '../controllers/user.controller';
-import { authenticate } from '../middleware/auth';
+import { authenticate, authorize } from '../middleware/auth';
 import { validate, updateProfileSchema } from '../middleware/validation';
 import { upload } from '../utils/upload';
 
@@ -17,5 +19,9 @@ router.put('/profile', authenticate, validate(updateProfileSchema), updateProfil
 router.put('/avatar', authenticate, upload.single('avatar'), uploadAvatar);
 router.get('/saved', authenticate, getSavedSpots);
 router.post('/saved/:spotId', authenticate, toggleSaveSpot);
+
+// Admin-only user management
+router.get('/', authenticate, authorize('admin'), getAllUsers);
+router.put('/:id/role', authenticate, authorize('admin'), updateUserRole);
 
 export default router;

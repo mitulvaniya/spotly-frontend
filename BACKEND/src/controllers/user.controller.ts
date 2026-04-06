@@ -120,3 +120,72 @@ export const toggleSaveSpot = asyncHandler(async (req: Request, res: Response): 
         });
     }
 });
+
+// @desc    Get all users (admin only)
+// @route   GET /api/users
+// @access  Private (Admin)
+export const getAllUsers = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { role, search, page = 1, limit = 20 } = req.query;
+
+    const query: any = {};
+    if (role) query.role = role;
+    if (search) {
+        query.$or = [
+            { name: new RegExp(search as string, 'i') },
+            { email: new RegExp(search as string, 'i') },
+        ];
+    }
+
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const skip = (pageNum - 1) * limitNum;
+
+    const users = await User.find(query)
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum);
+
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+        success: true,
+        data: {
+            users,
+            pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+        },
+    });
+});
+
+// @desc    Update user role (admin only)
+// @route   PUT /api/users/:id/role
+// @access  Private (Admin)
+export const updateUserRole = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    const { role } = req.body;
+    const allowedRoles = ['user', 'business_owner', 'admin'];
+
+    if (!allowedRoles.includes(role)) {
+        throw new AppError('Invalid role specified', 400);
+    }
+
+    // Prevent admin from demoting themselves
+    if (req.params.id === req.user._id.toString() && role !== 'admin') {
+        throw new AppError('You cannot change your own admin role', 403);
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.params.id,
+        { role },
+        { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+        throw new AppError('User not found', 404);
+    }
+
+    res.status(200).json({
+        success: true,
+        message: `User role updated to ${role}`,
+        data: { user },
+    });
+});
