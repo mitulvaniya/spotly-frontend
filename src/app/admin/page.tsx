@@ -254,10 +254,10 @@ export default function AdminPage() {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto pt-3 md:pt-0 mt-2 md:mt-0 border-t md:border-none border-border">
                                         <Button
                                             variant="outline"
-                                            className="gap-2 text-sm h-9"
+                                            className="gap-2 text-sm h-9 flex-1 md:flex-none justify-center"
                                             onClick={() => handleEdit(spot)}
                                         >
                                             <Edit3 className="w-4 h-4" /> Edit
@@ -282,10 +282,10 @@ export default function AdminPage() {
                                         ) : (
                                             <Button
                                                 variant="ghost"
-                                                className="gap-2 text-sm h-9 text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                                                className="gap-2 text-sm h-9 flex-1 md:flex-none justify-center text-red-500 hover:text-red-400 hover:bg-red-500/10"
                                                 onClick={() => setDeleteConfirm(spot._id)}
                                             >
-                                                <Trash2 className="w-4 h-4" />
+                                                <Trash2 className="w-4 h-4" /> Delete
                                             </Button>
                                         )}
                                     </div>
@@ -310,7 +310,7 @@ export default function AdminPage() {
                 title={`Edit: ${editingSpot?.name || ""}`}
             >
                 {editingSpot && (
-                    <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2">
+                    <div className="space-y-4 sm:space-y-5 max-h-[85vh] sm:max-h-[70vh] overflow-y-auto overflow-x-hidden pr-2">
                         {/* Name */}
                         <div className="space-y-1">
                             <label className="text-sm font-medium">Name</label>
@@ -323,7 +323,7 @@ export default function AdminPage() {
                         </div>
 
                         {/* Category + Price */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div className="space-y-1">
                                 <label className="text-sm font-medium">Category</label>
                                 <select
@@ -434,7 +434,7 @@ export default function AdminPage() {
                         </div>
 
                         {/* Location */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div className="space-y-1">
                                 <label className="text-sm font-medium">Address</label>
                                 <input
@@ -462,7 +462,7 @@ export default function AdminPage() {
                         </div>
 
                         {/* Contact */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div className="space-y-1">
                                 <label className="text-sm font-medium">Phone</label>
                                 <input

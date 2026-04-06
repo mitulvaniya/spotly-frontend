@@ -73,8 +73,8 @@ export default function TrendingPage() {
                         >
                             <Flame className="w-4 h-4" /> Hottest in Surat
                         </motion.div>
-                        <h1 className="text-5xl md:text-6xl font-black mb-4">Trending Now</h1>
-                        <p className="text-muted-foreground text-lg max-w-lg">
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 leading-tight">Trending Now</h1>
+                        <p className="text-muted-foreground text-sm sm:text-lg max-w-lg mx-auto md:mx-0">
                             The most visited, reviewed, and talked-about spots in Surat this week.
                         </p>
                     </div>

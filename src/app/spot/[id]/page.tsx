@@ -215,7 +215,7 @@ export default function SpotDetailPage() {
                                 {spot.priceRange || "$$"}
                             </div>
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tight">
+                        <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white mb-4 tracking-tight leading-tight">
                             {spot.name}
                         </h1>
                         <p className="text-xl text-white/80 max-w-2xl flex items-center gap-2">
@@ -231,11 +231,11 @@ export default function SpotDetailPage() {
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-12">
                         {/* Actions Mobile Only */}
-                        <div className="flex lg:hidden gap-4 overflow-x-auto pb-4">
-                            <Button onClick={handleSave} variant={isLiked ? "primary" : "outline"} className="w-full gap-2 text-lg h-12">
+                        <div className="flex lg:hidden gap-3 pb-4 border-b border-border mb-6">
+                            <Button onClick={handleSave} variant={isLiked ? "primary" : "outline"} className="flex-1 gap-2 text-base md:text-lg h-12 shadow-md">
                                 <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} /> {isLiked ? "Saved" : "Save"}
                             </Button>
-                            <Button onClick={handleShare} variant="outline" className="w-full gap-2 text-lg h-12">
+                            <Button onClick={handleShare} variant="outline" className="flex-1 gap-2 text-base md:text-lg h-12 shadow-md">
                                 <Share2 className="w-5 h-5" /> Share
                             </Button>
                         </div>
@@ -314,7 +314,7 @@ export default function SpotDetailPage() {
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: 0.1 * i }}
-                                            className="bg-white/5 border border-white/10 rounded-2xl p-6"
+                                            className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6"
                                         >
                                             <div className="flex items-start gap-4">
                                                 {/* Avatar fallback */}

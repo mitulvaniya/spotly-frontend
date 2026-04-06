@@ -217,12 +217,20 @@ export function Navbar() {
                                                 </div>
                                             </div>
                                             <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
-                                                <Button variant="outline" className="w-full justify-start gap-2">
-                                                    <User className="w-4 h-4" />
-                                                    Profile
+                                            <Button variant="outline" className="w-full justify-start gap-2 mb-2">
+                                                <User className="w-4 h-4" />
+                                                Profile
+                                            </Button>
+                                        </Link>
+                                        {user.role === 'admin' && (
+                                            <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
+                                                <Button variant="secondary" className="w-full justify-start gap-2 mb-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 dark:text-red-300">
+                                                    <Shield className="w-4 h-4" />
+                                                    Admin Panel
                                                 </Button>
                                             </Link>
-                                            <Button
+                                        )}
+                                        <Button
                                                 variant="ghost"
                                                 className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
                                                 onClick={() => {
