@@ -8,6 +8,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { Logo } from "@/components/ui/Logo";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Sparkles, Heart, Menu, X, User, LogOut, Shield } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { authApi } from "@/lib/api";
@@ -17,6 +18,7 @@ export function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const pathname = usePathname();
 
 
     useEffect(() => {
@@ -248,17 +250,19 @@ export function Navbar() {
                 </AnimatePresence>
             </motion.header >
 
-            {/* Mobile AI Floating Action Button (Always Visible) */}
-            <div className="md:hidden fixed bottom-6 right-6 z-[100]">
-                <Link href="/ai">
-                    <Button 
-                        className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(99,102,241,0.5)] text-white hover:scale-110 active:scale-95 transition-transform flex items-center justify-center p-0"
-                        aria-label="Ask AI Host"
-                    >
-                        <Sparkles className="w-6 h-6 animate-pulse" />
-                    </Button>
-                </Link>
-            </div>
+            {/* Mobile AI Floating Action Button (Always Visible except on /ai page) */}
+            {pathname !== "/ai" && (
+                <div className="md:hidden fixed bottom-6 right-6 z-[100]">
+                    <Link href="/ai">
+                        <Button 
+                            className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(99,102,241,0.5)] text-white hover:scale-110 active:scale-95 transition-transform flex items-center justify-center p-0"
+                            aria-label="Ask AI Host"
+                        >
+                            <Sparkles className="w-6 h-6 animate-pulse" />
+                        </Button>
+                    </Link>
+                </div>
+            )}
         </>
     );
 }
