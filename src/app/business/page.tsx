@@ -67,14 +67,21 @@ export default function BusinessDashboardPage() {
             router.push("/signin");
             return;
         }
+        
+        if (currentUser.role !== 'business_owner' && currentUser.role !== 'admin') {
+            toast.error("Access Denied: You must be a registered Business Owner to safely view this panel.");
+            router.push("/");
+            return;
+        }
+
         setUser(currentUser);
-        fetchMySpots();
+        fetchMySpots(currentUser._id || currentUser.id);
     }, [router]);
 
-    const fetchMySpots = async () => {
+    const fetchMySpots = async (ownerId: string) => {
         setIsLoading(true);
         try {
-            const res = await api.get<{ spots: Spot[] }>("/spots?limit=100");
+            const res = await api.get<{ spots: Spot[] }>(`/spots?limit=100&owner=${ownerId}&status=all`);
             if (res.success && res.data?.spots) {
                 setSpots(res.data.spots);
             }
@@ -165,7 +172,7 @@ export default function BusinessDashboardPage() {
                 toast.success("Spot added! It will be reviewed and approved shortly. 🎉");
                 setShowModal(false);
                 resetForm();
-                fetchMySpots();
+                fetchMySpots(user._id || user.id);
             } else {
                 toast.error(result.message || "Failed to add spot. Make sure you're signed in as a Business Owner.");
             }

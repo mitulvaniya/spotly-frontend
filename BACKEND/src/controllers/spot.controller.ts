@@ -13,13 +13,25 @@ export const getSpots = asyncHandler(async (req: Request, res: Response): Promis
         minRating,
         search,
         city,
+        owner,
+        status,
         page = 1,
         limit = 12,
         sort = '-createdAt',
     } = req.query;
 
     // Build query
-    const query: any = { isActive: true, status: 'approved' };
+    const query: any = { isActive: true };
+
+    if (owner) {
+        query.owner = owner;
+    }
+
+    if (status && status !== 'all') {
+        query.status = status;
+    } else if (!status) {
+        query.status = 'approved';
+    }
 
     if (category) query.category = category;
     if (priceRange) query.priceRange = priceRange;
