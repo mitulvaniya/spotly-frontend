@@ -94,6 +94,10 @@ export default function AdminPage() {
         }
         setIsAdmin(true);
         fetchSpots();
+        // Pre-load business requests so the badge count shows immediately
+        api.get<{ users: AppUser[] }>('/users/business-requests?status=pending').then(res => {
+            if (res.success && res.data?.users) setBusinessRequests(res.data.users);
+        });
     }, [router]);
 
     const fetchSpots = async () => {
@@ -330,7 +334,7 @@ export default function AdminPage() {
                                 <Users className="w-4 h-4" /> Users
                             </button>
                             <button
-                                onClick={() => { setPanelView('requests'); if (businessRequests.length === 0) fetchBusinessRequests(); }}
+                                onClick={() => { setPanelView('requests'); fetchBusinessRequests(); }}
                                 className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap relative', panelView === 'requests' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
                             >
                                 <Clock className="w-4 h-4" /> Requests
