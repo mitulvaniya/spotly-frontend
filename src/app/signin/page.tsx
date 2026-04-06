@@ -80,14 +80,32 @@ export default function SignInPage() {
             if (response.success) {
                 const user = response.data?.user;
                 const role = user?.role;
+                const businessRequest = (user as any)?.businessRequest;
 
-                // If they picked Business tab but aren't a business owner — warn them
-                if (accountType === 'business_owner' && role !== 'business_owner' && role !== 'admin') {
-                    toast.error("This account is not registered as a Business Owner.", {
-                        description: "Please sign up with a Business account or use your Explorer login.",
+                // Business tab + pending request → status page
+                if (accountType === 'business_owner' && role === 'user' && businessRequest?.status === 'pending') {
+                    toast.info("Your business account is still under review.", {
+                        description: "Redirecting to your status page.",
                     });
-                    // Still log them in as a regular user
-                    window.location.href = '/';
+                    window.location.href = '/business-pending';
+                    return;
+                }
+
+                // Business tab + rejected request → status page
+                if (accountType === 'business_owner' && role === 'user' && businessRequest?.status === 'rejected') {
+                    toast.error("Your business request was not approved.", {
+                        description: "You can reapply from the signup page.",
+                    });
+                    window.location.href = '/business-pending';
+                    return;
+                }
+
+                // Business tab + no request at all
+                if (accountType === 'business_owner' && role === 'user' && !businessRequest) {
+                    toast.error("No business account found.", {
+                        description: "Please sign up with a Business account first.",
+                    });
+                    window.location.href = '/signup';
                     return;
                 }
 
