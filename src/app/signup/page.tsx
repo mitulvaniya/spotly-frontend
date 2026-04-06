@@ -1,17 +1,17 @@
 "use client";
 
 import React from "react";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
-import { User, Mail, Lock, ArrowLeft } from "lucide-react";
+import { User, Mail, Lock, Store, Sparkles, Building2 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { authApi } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 declare global {
     interface Window {
@@ -25,10 +25,12 @@ export default function SignUpPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [accountType, setAccountType] = useState<'user' | 'business_owner'>('user');
     const [formData, setFormData] = useState({
         name: "",
         email: "",
-        password: ""
+        password: "",
+        businessName: "",
     });
 
     const handleGoogleResponse = useCallback(async (response: any) => {
@@ -36,7 +38,6 @@ export default function SignUpPage() {
             toast.error("Google sign-up failed", { description: "No credential received." });
             return;
         }
-
         setIsGoogleLoading(true);
         try {
             const result = await authApi.googleLogin(response.credential);
@@ -55,7 +56,6 @@ export default function SignUpPage() {
 
     useEffect(() => {
         if (!GOOGLE_CLIENT_ID) return;
-
         const script = document.createElement('script');
         script.src = 'https://accounts.google.com/gsi/client';
         script.async = true;
@@ -67,46 +67,46 @@ export default function SignUpPage() {
             });
         };
         document.body.appendChild(script);
-
-        return () => {
-            try { document.body.removeChild(script); } catch (e) { }
-        };
+        return () => { try { document.body.removeChild(script); } catch (e) { } };
     }, [handleGoogleResponse]);
 
     const handleGoogleClick = () => {
-        if (!GOOGLE_CLIENT_ID) {
-            toast.info("Google login requires a Client ID. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID.");
-            return;
-        }
-        if (!window.google) {
-            toast.error("Google SDK not loaded yet. Please try again in a moment.");
-            return;
-        }
+        if (!GOOGLE_CLIENT_ID) { toast.info("Google login requires a Client ID."); return; }
+        if (!window.google) { toast.error("Google SDK not loaded yet."); return; }
         window.google.accounts.id.prompt();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (formData.password.length < 6) {
+            toast.error("Password must be at least 6 characters.");
+            return;
+        }
         setIsLoading(true);
-
         try {
-            const response = await authApi.register(formData.name, formData.email, formData.password);
+            const displayName = accountType === 'business_owner' && formData.businessName
+                ? formData.businessName
+                : formData.name;
+
+            const response = await authApi.register(displayName, formData.email, formData.password, accountType);
 
             if (response.success) {
-                toast.success("Account created!", {
-                    description: "You have successfully signed up. Welcome to SPOTLY!",
-                });
-                window.location.href = '/';
+                if (accountType === 'business_owner') {
+                    toast.success("Business account created! 🎉", {
+                        description: "Welcome to SPOTLY Business. Redirecting to your dashboard...",
+                    });
+                    window.location.href = '/business';
+                } else {
+                    toast.success("Account created! Welcome to SPOTLY!", {
+                        description: "Start discovering amazing spots in your city.",
+                    });
+                    window.location.href = '/';
+                }
             } else {
-                toast.error("Sign up failed", {
-                    description: response.message || "Please check your details.",
-                });
+                toast.error("Sign up failed", { description: response.message || "Please check your details." });
             }
         } catch (error: any) {
-            console.error("Registration error:", error);
-            toast.error("An error occurred", {
-                description: error.message || "Please try again later.",
-            });
+            toast.error("An error occurred", { description: error.message || "Please try again later." });
         } finally {
             setIsLoading(false);
         }
@@ -123,7 +123,6 @@ export default function SignUpPage() {
                     className="w-full max-w-md"
                 >
                     <div className="glass-card p-8 rounded-3xl border border-white/10 relative overflow-hidden">
-                        {/* Decorative blur */}
                         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
                         <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-secondary/20 blur-[100px] rounded-full pointer-events-none" />
 
@@ -135,24 +134,89 @@ export default function SignUpPage() {
                                     </span>
                                 </Link>
                                 <h1 className="text-2xl font-bold mb-2">Create an account</h1>
-                                <p className="text-muted-foreground">Join SPOTLY to discover and save amazing places</p>
+                                <p className="text-muted-foreground text-sm">Choose how you want to use SPOTLY</p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium ml-1">Full Name</label>
-                                    <div className="relative">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                                        <input
-                                            type="text"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            placeholder="John Doe"
-                                            className="w-full bg-muted/50 border border-border rounded-xl px-12 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                                            required
-                                        />
+                            {/* Account Type Selector */}
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setAccountType('user')}
+                                    className={cn(
+                                        "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-200",
+                                        accountType === 'user'
+                                            ? "border-primary bg-primary/10"
+                                            : "border-border bg-muted/30 hover:border-primary/40"
+                                    )}
+                                >
+                                    <Sparkles className={cn("w-6 h-6", accountType === 'user' ? "text-primary" : "text-muted-foreground")} />
+                                    <div className="text-center">
+                                        <p className="font-semibold text-sm text-foreground">Explorer</p>
+                                        <p className="text-xs text-muted-foreground leading-tight mt-0.5">Discover &amp; save spots</p>
                                     </div>
-                                </div>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setAccountType('business_owner')}
+                                    className={cn(
+                                        "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all duration-200",
+                                        accountType === 'business_owner'
+                                            ? "border-primary bg-primary/10"
+                                            : "border-border bg-muted/30 hover:border-primary/40"
+                                    )}
+                                >
+                                    <Building2 className={cn("w-6 h-6", accountType === 'business_owner' ? "text-primary" : "text-muted-foreground")} />
+                                    <div className="text-center">
+                                        <p className="font-semibold text-sm text-foreground">Business</p>
+                                        <p className="text-xs text-muted-foreground leading-tight mt-0.5">List &amp; manage spots</p>
+                                    </div>
+                                </button>
+                            </div>
+
+                            {accountType === 'business_owner' && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-primary flex items-start gap-2"
+                                >
+                                    <Store className="w-4 h-4 shrink-0 mt-0.5" />
+                                    <span>Your business account gives you access to list spots, view analytics, and manage your presence on SPOTLY.</span>
+                                </motion.div>
+                            )}
+
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                {accountType === 'business_owner' ? (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium ml-1">Business Name</label>
+                                        <div className="relative">
+                                            <Store className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                            <input
+                                                type="text"
+                                                value={formData.businessName}
+                                                onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                                                placeholder="e.g. Meraki Cafe"
+                                                className="w-full bg-muted/50 border border-border rounded-xl px-12 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium ml-1">Full Name</label>
+                                        <div className="relative">
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                                            <input
+                                                type="text"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                placeholder="John Doe"
+                                                className="w-full bg-muted/50 border border-border rounded-xl px-12 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium ml-1">Email</label>
                                     <div className="relative">
@@ -167,6 +231,7 @@ export default function SignUpPage() {
                                         />
                                     </div>
                                 </div>
+
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium ml-1">Password</label>
                                     <div className="relative">
@@ -175,24 +240,24 @@ export default function SignUpPage() {
                                             type="password"
                                             value={formData.password}
                                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            placeholder="••••••••"
+                                            placeholder="Min. 6 characters"
                                             className="w-full bg-muted/50 border border-border rounded-xl px-12 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                             required
+                                            minLength={6}
                                         />
                                     </div>
                                 </div>
 
-                                <Button
-                                    type="submit"
-                                    className="w-full"
-                                    size="lg"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? "Creating account..." : "Sign Up"}
+                                <Button type="submit" className="w-full gap-2" size="lg" disabled={isLoading}>
+                                    {isLoading
+                                        ? "Creating account..."
+                                        : accountType === 'business_owner'
+                                            ? <><Building2 className="w-4 h-4" /> Create Business Account</>
+                                            : "Sign Up Free"}
                                 </Button>
                             </form>
 
-                            <div className="relative my-8">
+                            <div className="relative my-6">
                                 <div className="absolute inset-0 flex items-center">
                                     <div className="w-full border-t border-border"></div>
                                 </div>
@@ -201,19 +266,17 @@ export default function SignUpPage() {
                                 </div>
                             </div>
 
-                            <div>
-                                <Button variant="outline" className="w-full gap-2" type="button" onClick={handleGoogleClick} disabled={isGoogleLoading}>
-                                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                                    </svg>
-                                    {isGoogleLoading ? "Signing up..." : "Continue with Google"}
-                                </Button>
-                            </div>
+                            <Button variant="outline" className="w-full gap-2" type="button" onClick={handleGoogleClick} disabled={isGoogleLoading}>
+                                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                </svg>
+                                {isGoogleLoading ? "Signing up..." : "Continue with Google"}
+                            </Button>
 
-                            <p className="text-center text-sm text-muted-foreground mt-8">
+                            <p className="text-center text-sm text-muted-foreground mt-6">
                                 Already have an account?{" "}
                                 <Link href="/signin" className="text-primary hover:underline font-medium">
                                     Sign in

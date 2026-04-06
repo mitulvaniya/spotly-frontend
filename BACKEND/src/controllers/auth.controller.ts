@@ -8,7 +8,7 @@ import { OAuth2Client } from 'google-auth-library';
 // @route   POST /api/auth/register
 // @access  Public
 export const register = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, role } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -16,12 +16,17 @@ export const register = asyncHandler(async (req: Request, res: Response): Promis
         throw new AppError('User with this email already exists', 400);
     }
 
+    // Only allow user or business_owner to self-register. Admin is never self-assigned.
+    const allowedRoles = ['user', 'business_owner'];
+    const assignedRole = allowedRoles.includes(role) ? role : 'user';
+
     // Create user
     const user = await User.create({
         name,
         email,
         password,
         phone,
+        role: assignedRole,
     });
 
     // Generate tokens
