@@ -247,13 +247,18 @@ export function Navbar() {
             </AnimatePresence>
 
             {/* Mobile AI Floating Action Button (Always Visible) */}
-            <div className="md:hidden fixed bottom-6 right-6 z-[100]">
+            <div className="md:hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-[100]">
                 <Link href="/ai">
                     <Button 
-                        className="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-[0_0_20px_rgba(99,102,241,0.5)] text-white hover:scale-110 active:scale-95 transition-transform flex items-center justify-center p-0"
+                        className="h-12 px-6 rounded-full bg-background/80 backdrop-blur-xl border border-indigo-500/30 shadow-[0_8px_32px_rgba(99,102,241,0.25)] text-foreground hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
                         aria-label="Ask AI Host"
                     >
-                        <Sparkles className="w-6 h-6 animate-pulse" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center -ml-2">
+                            <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                        </div>
+                        <span className="font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent truncate">
+                            Ask AI
+                        </span>
                     </Button>
                 </Link>
             </div>
