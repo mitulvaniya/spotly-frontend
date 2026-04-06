@@ -63,7 +63,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[90dvh] md:min-h-screen flex items-center justify-center overflow-hidden pt-28 pb-16 md:py-0">
         {/* Professional Abstract Background */}
         <div className="absolute inset-0 z-0 bg-background overflow-hidden">
           <div className="absolute top-0 w-full h-[100vh] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.15),rgba(0,0,0,0))]" />
@@ -134,11 +134,11 @@ export default function Home() {
       </section>
 
       {/* Featured Spots Section */}
-      <section className="py-24 px-6 md:px-12 bg-muted/30 dark:bg-black/40">
+      <section className="py-16 md:py-24 px-6 md:px-12 bg-muted/30 dark:bg-black/40">
         <div className="container mx-auto">
-          <div className="flex items-end justify-between mb-12">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 md:mb-12 gap-4">
             <div>
-              <h2 className="text-4xl font-bold mb-2">Trending Now</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-2">Trending Now</h2>
               <p className="text-muted-foreground">The hottest spots in the city everyone is talking about.</p>
             </div>
             <Link href="/discover?sort=-views">
@@ -162,7 +162,7 @@ export default function Home() {
                     transition={{ delay: i * 0.1, duration: 0.5 }}
                     className="group relative cursor-pointer"
                   >
-                    <div className="relative aspect-[4/5] overflow-hidden rounded-3xl border border-white/10">
+                    <div className="relative aspect-[3/2] sm:aspect-[4/5] overflow-hidden rounded-3xl border border-white/10 shadow-lg">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={spot.featuredImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'}
@@ -170,19 +170,19 @@ export default function Home() {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'; }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 sm:via-black/20 to-transparent opacity-90 sm:opacity-80" />
 
-                      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-1 text-sm font-medium">
+                      <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-1 text-xs sm:text-sm font-medium">
                         <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {spot.rating || "New"}
                       </div>
 
-                      <div className="absolute bottom-0 left-0 p-6 w-full">
-                        <span className="text-xs font-medium text-primary bg-primary/20 px-2 py-1 rounded-md mb-3 inline-block border border-primary/20">
-                          {spot.category}
+                      <div className="absolute bottom-0 left-0 p-5 sm:p-6 w-full">
+                        <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-primary bg-primary/20 xl:bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-full mb-2 sm:mb-3 inline-block border border-primary/20">
+                          {spot.category.toUpperCase()}
                         </span>
-                        <h3 className="text-2xl font-bold mb-1 text-white group-hover:text-primary transition-colors">{spot.name}</h3>
-                        <div className="flex items-center gap-2 text-white/60 text-sm">
-                          <MapPin className="w-4 h-4" /> {spot.location?.city || "City Center"}
+                        <h3 className="text-xl sm:text-2xl font-bold mb-1.5 text-white group-hover:text-primary transition-colors leading-tight line-clamp-2">{spot.name}</h3>
+                        <div className="flex items-center gap-1.5 text-white/70 text-xs sm:text-sm">
+                          <MapPin className="w-3.5 h-3.5" /> {spot.location?.city || "City Center"}
                         </div>
                       </div>
                     </div>
@@ -226,7 +226,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   whileHover={{ y: -10 }}
                   transition={{ delay: i * 0.1 }}
-                  className="group relative h-96 rounded-3xl overflow-hidden cursor-pointer"
+                  className="group relative h-64 md:h-96 rounded-3xl overflow-hidden cursor-pointer shadow-lg"
                 >
                   {/* Background Image */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
