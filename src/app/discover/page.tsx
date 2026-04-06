@@ -254,11 +254,11 @@ function DiscoverContent() {
                                                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-3xl">
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
-                                                        src={spot.featuredImage || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800'}
+                                                        src={spot.featuredImage || 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=800'}
                                                         alt={spot.name}
                                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                         onError={(e) => {
-                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800';
+                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=800';
                                                         }}
                                                     />
                                                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold border border-white/10">
